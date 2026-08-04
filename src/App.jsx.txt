@@ -1,0 +1,1794 @@
+import { useState, useEffect, useRef } from "react";
+
+function generateId() {
+  return Math.random().toString(36).substring(2,10) + Date.now().toString(36);
+}
+
+const PAPERS = {
+  "1":{name:"Paper 1",color:"#0ea5e9",gradient:"linear-gradient(135deg,#0c4a6e,#0369a1)",icon:"📋",
+    subjects:["CHE 211","CHE 213","CHE 215","CHE 218","GNP 123","CHE 254","CHE 262","CHE 214","ENT 111","CHE 240","CHE 233","CHE 221","CHE 226"]},
+  "2":{name:"Paper 2",color:"#10b981",gradient:"linear-gradient(135deg,#064e3b,#059669)",icon:"📗",
+    subjects:["CHE 246","CHE 223","CHE 224","CHE 225","CHE 231","CHE 241","CHE 261","CHE 263","CHE 264","CHE 253","CHE 242"]},
+  "3":{name:"Paper 3",color:"#f59e0b",gradient:"linear-gradient(135deg,#78350f,#d97706)",icon:"📙",
+    subjects:["CHE 234","CHE 232","CHE 235","CHE 236","CHE 225","CHE 244","CHE 245","CHE 251","CHE 252","CHE 237","CHE 257","CHE 239"]},
+};
+
+const ALL_Q = [
+// PAPER 1
+  {p:"1",s:"CHE 211",q:"CHPRBN was established by:",o:["Decree 60 of 1992","Decree 61 of 1992","Decree 61 of 1990","Decree 60 of 1990"],a:1,e:"CHPRBN = Decree 61 of 1992. Registers, licenses and disciplines all CHEWs and JCHEWs in Nigeria."},
+
+  {p:"1",s:"CHE 211",q:"NACHPN stands for:",o:["National Association of Country Health Practitioners","National Association of Community Health Practitioners of Nigeria","National Association of Community Health Practitioners of the Nation","National Association of Concerned Health Practitioners"],a:1,e:"NACHPN = National Association of Community Health Practitioners of Nigeria."},
+
+  {p:"1",s:"CHE 211",q:"Etiquette is best defined as:",o:["System guiding moral behaviour","Code of manners, behaviours and action","Qualities a person believes important","Occupation demanding high education"],a:1,e:"Etiquette = Code of manners, behaviours and action. Being warm and attentive IS etiquette."},
+
+  {p:"1",s:"CHE 211",q:"One NOT acceptable professional behaviour for CHEW:",o:["Positive attitude to work","Genuine desire to help people","Honest explanation of charges","Flare up with patients"],a:3,e:"Flaring up with patients is completely unacceptable professional behaviour for a CHEW."},
+
+  {p:"1",s:"CHE 211",q:"Ethics breach is viewed with:",o:["Approval by whole society","Disapproval by selected few","Disapproval by totality of society","Approval by professional body"],a:2,e:"Ethics breach = disapproval by TOTALITY of society — universal professional standard."},
+
+  {p:"1",s:"CHE 211",q:"NOT a form of defence mechanism:",o:["Denial","Projection","Institution","Regression"],a:2,e:"Institution is NOT a defence mechanism. Real ones: Denial, Projection, Regression, Repression, Rationalisation, Displacement."},
+
+  {p:"1",s:"CHE 211",q:"NOT a professional responsibility of CHEW:",o:["Caring for the sick","Calculate money spent on each client","Training others","Evaluating and conducting research"],a:1,e:"Calculating money spent per client is NOT a CHEW professional responsibility."},
+
+  {p:"1",s:"CHE 211",q:"NOT a code of conduct of community health practitioner:",o:["Set a high standard","Use of standing orders","Knowing your colleague","Maintaining two-way referral"],a:2,e:"'Knowing your colleague' is not a formal code of conduct item for CHEWs."},
+
+  {p:"1",s:"CHE 213",q:"A person who sends a message is known as:",o:["Decoder","Encoder","Receiver","Messenger"],a:1,e:"Encoder = SENDER of message. Decoder = receiver. In health education the CHEW is usually the encoder."},
+
+  {p:"1",s:"CHE 213",q:"NOT an advantage of teaching aids:",o:["Arouse interest","Welcoming of participants","Help make points clear","Help consolidate points"],a:1,e:"Welcoming participants = NOT an advantage of teaching aids — it is basic courtesy, not a teaching aid benefit."},
+
+  {p:"1",s:"CHE 213",q:"NOT a barrier to effective communication:",o:["Personality","Poor listening","Poor planning","Adequate knowledge"],a:3,e:"Adequate knowledge = NOT a barrier — it FACILITATES communication. Poor listening and planning are barriers."},
+
+  {p:"1",s:"CHE 213",q:"To promote effective group discussion you must:",o:["Believe time and place not relevant","Greet group in English only","Listen more than talk","Permit participants to introduce any topic"],a:2,e:"Listen MORE than talk = key principle of effective group discussion."},
+
+  {p:"1",s:"CHE 213",q:"Example of audio-visual method of communication:",o:["Blackboard","Television","Tapes","Radio"],a:1,e:"Television = audio-visual (both sound + image). Radio = audio only. Blackboard = visual only."},
+
+  {p:"1",s:"CHE 213",q:"A person who does NOT conform with norms of society:",o:["Uncompromising","Deviant","Extrovert","Aggressive"],a:1,e:"DEVIANT = person who consistently does not conform to the norms of society."},
+
+  {p:"1",s:"CHE 213",q:"Principle of health education NOT one of these:",o:["Clarity","Simplicity","Adaptability","Personality"],a:3,e:"Personality is NOT a principle of health education. Principles include: Clarity, Simplicity, Adaptability."},
+
+  {p:"1",s:"CHE 215",q:"PHC approach of Nigerian Health System emphasizes:",o:["Out-in approach","Bottom-up approach","In-out approach","Up-down approach"],a:1,e:"PHC = BOTTOM-UP. Communities involved in planning, implementation AND evaluation."},
+
+  {p:"1",s:"CHE 215",q:"Nigeria formally launched PHC in:",o:["1975","1978","1985","1988"],a:3,e:"Nigeria formally launched PHC in 1988 under Prof. Olikoye Ransome-Kuti. Alma-Ata = 1978."},
+
+  {p:"1",s:"CHE 215",q:"NOT a component of PHC:",o:["MCH including Family Planning","Exclusive breastfeeding","Treatment of common diseases","Provision of essential drugs"],a:1,e:"EBF is NOT one of the 8 PHC components. The 8: Education, Nutrition, Safe water/sanitation, MCH/FP, Immunization, Endemic prevention, Common disease treatment, Essential drugs."},
+
+  {p:"1",s:"CHE 215",q:"Community involvement means:",o:["Identifying demographic pattern","Community participation in planning and implementation","Identify social factors","Identify work done by community"],a:1,e:"Community involvement = participation in PLANNING AND IMPLEMENTATION of programmes."},
+
+  {p:"1",s:"CHE 215",q:"Clinic based functions of CHEW does NOT include:",o:["Spending 70% of time in clinic","Carry out day-to-day clinic admin with CHO","Collect monitoring data","Provide integrated PHC services"],a:0,e:"CHEWs spend 30% in clinic, 70% COMMUNITY. NOT 70% in clinic."},
+
+  {p:"1",s:"CHE 218",q:"Steps in planning situation analysis EXCEPT:",o:["Contacting development committee","Obtaining materials and instruments","Excluding members of community","Arranging logistics"],a:2,e:"Community members must NEVER be excluded from planning — inclusion is a core PHC principle."},
+
+  {p:"1",s:"CHE 218",q:"Common method used in community diagnosis:",o:["Role play","Interview","Lecture","Story telling"],a:1,e:"INTERVIEW = most common method used in community diagnosis to gather data."},
+
+  {p:"1",s:"CHE 218",q:"Resources available in community include all EXCEPT:",o:["Industries","Markets","School children","Health facilities"],a:2,e:"School CHILDREN are NOT a community resource — they are beneficiaries. Resources: industries, markets, health facilities."},
+
+  {p:"1",s:"CHE 218",q:"PHC House Numbering System format:",o:["PHC/2/15/099","PHC/002/015/099","PHC/02/015/099","PHC/02/15/99"],a:2,e:"PHC House Numbering = PHC/02/015/099 format (PHC/LGA code/Ward/House number)."},
+
+  {p:"1",s:"GNP 123",q:"Pharmacovigilance is also known as:",o:["Drug interaction","Drug safety","Drug composition","Drug allergy"],a:1,e:"Pharmacovigilance = DRUG SAFETY — detecting and preventing adverse drug reactions. Report ADRs to NAFDAC."},
+
+  {p:"1",s:"GNP 123",q:"Drug NOT classified by function:",o:["Antimalarial","Antibiotics","Capsule","Antiemetics"],a:2,e:"Capsule = dosage FORM (how drug is presented), NOT a functional classification."},
+
+  {p:"1",s:"GNP 123",q:"Drug sources do NOT include:",o:["Recombinant DNA","Plant source","Biodegradable source","Animal source"],a:2,e:"Biodegradable source DOES NOT EXIST as a drug source. Real sources: Plant, Animal, Mineral, Microbiological, Synthetic, Recombinant DNA."},
+
+  {p:"1",s:"GNP 123",q:"Principle of drug administration NOT one of these:",o:["Right time","Right dose","Right patient","Right cost"],a:3,e:"Right COST is NOT a principle. The 6 Rights: Patient, Drug, Dose, Route, Time, Documentation."},
+
+  {p:"1",s:"GNP 123",q:"Which vitamin is NOT fat-soluble:",o:["Vitamin E","Vitamin A","Vitamin B","Vitamin D"],a:2,e:"Vitamin B = WATER-SOLUBLE. Fat-soluble: ADEK (A,D,E,K). Very common exam trap!"},
+
+  {p:"1",s:"GNP 123",q:"Example of antifungal agent:",o:["Chloroquine","Nystatin","Pyrimethamine","Aspirin"],a:1,e:"Nystatin = ANTIFUNGAL. Chloroquine = antimalarial. Aspirin = analgesic/antipyretic."},
+
+  {p:"1",s:"GNP 123",q:"Fastest route of drug administration:",o:["Oral","Sublingual","Intramuscular","Intravenous (IV)"],a:3,e:"IV = fastest — directly into bloodstream. Order: IV→Sublingual→IM→SC→Oral→Rectal."},
+
+  {p:"1",s:"CHE 254",q:"In PHC essential drugs are:",o:["Expensive drugs","Drugs in adequate dosage","Drugs for rare diseases","Drugs indispensable for health needs of majority"],a:3,e:"Essential drugs = satisfy healthcare needs of the MAJORITY of the population."},
+
+  {p:"1",s:"CHE 254",q:"DRF seed fund means:",o:["Monies planted in drug store","Funds from drug sales","Initial fund used to procure drugs","Initial profit deposited in bank"],a:2,e:"Seed fund = INITIAL FUND used to procure the first set of drugs — creates a revolving system."},
+
+  {p:"1",s:"CHE 254",q:"NOT an anticonvulsant drug:",o:["Diazepam","Paraldehyde","Bisacodyl","Phenobarbitone"],a:2,e:"Bisacodyl = LAXATIVE. Anticonvulsants: Diazepam, Paraldehyde, Phenobarbitone."},
+
+  {p:"1",s:"CHE 254",q:"NOT an antihelminthic drug:",o:["Levamisole","Niclosamide","Piperazine","Atropine"],a:3,e:"Atropine = anticholinergic/antispasmodic. Antihelminthics: Levamisole, Niclosamide, Piperazine."},
+
+  {p:"1",s:"CHE 262",q:"Two-way referral is complete when:",o:["Patient fully recovered","Patient dies","There is feedback","Patient partially recovered"],a:2,e:"Two-way referral complete = FEEDBACK received from higher level. Purpose = CONTINUITY OF CARE."},
+
+  {p:"1",s:"CHE 262",q:"Purpose of two-way referral is to:",o:["Make good flow of patients","Ensure continuity of care","Make supervision easy","Explain drugs to patient"],a:1,e:"Two-way referral purpose = ENSURE CONTINUITY OF CARE."},
+
+  {p:"1",s:"CHE 262",q:"Complaint NOT in JCHEW standing orders managed by:",o:["Refer to a CHEW","Refer to traditional healer","Use past experience","Keep trying"],a:0,e:"JCHEW → CHEW (one step up). Pathway: JCHEW→CHEW→CHO→Doctor→Secondary→Tertiary."},
+
+  {p:"1",s:"CHE 262",q:"Service NOT managed during outreach:",o:["ANC","Urine testing","Immunization","Dilation and curettage"],a:3,e:"D&C = surgical procedure. CANNOT be done at outreach. Outreach: ANC, immunization, FP, urine tests."},
+
+  {p:"1",s:"CHE 262",q:"Cases handled at PHC level EXCEPT:",o:["Malaria","Worm infestation","Minor wound dressing","Ectopic pregnancy"],a:3,e:"Ectopic pregnancy = surgical emergency → cannot be handled at PHC level."},
+
+  {p:"1",s:"CHE 262",q:"Places that CANNOT be used for outreach stations:",o:["Village head compound","Airport","Classrooms","Market place"],a:1,e:"Airport is NOT a suitable outreach location. Good locations: village compounds, schools, markets."},
+
+  {p:"1",s:"CHE 214",q:"Body-building foods include all EXCEPT:",o:["Fish","Beans","Meat","Sweet potato"],a:3,e:"Sweet potato = ENERGY food (carbohydrate). Body-building = PROTEINS: fish, beans, meat, eggs."},
+
+  {p:"1",s:"CHE 214",q:"When MUAC strip reads yellow it means:",o:["Mildly/moderately malnourished","Baby is well fed","Baby is under age","Baby is sick"],a:0,e:"YELLOW (11.5-12.5cm) = MAM (Mild/Moderate Acute Malnutrition). RED = SAM. GREEN = Normal."},
+
+  {p:"1",s:"CHE 214",q:"Factors affecting nutritional status EXCEPT:",o:["Frequency of feeds","Political factors","Family size","Seasonal variation"],a:1,e:"Political factors do NOT directly affect nutritional status. Factors: frequency of feeds, family size, seasonal variation."},
+
+  {p:"1",s:"CHE 214",q:"MUAC RED colour means:",o:["Normal nutrition","MAM","SAM — severe acute malnutrition","Overnutrition"],a:2,e:"RED (<11.5cm) = SAM → RUTF (Ready-to-Use Therapeutic Food) immediately."},
+
+  {p:"1",s:"ENT 111",q:"Unit for measurement of noise:",o:["Barometer","Dosimeter","Decibel","Sound level meter"],a:2,e:"DECIBEL (dB) = unit for measuring noise. Safe level = <85 dB for 8 hours."},
+
+  {p:"1",s:"ENT 111",q:"Solid waste of food, vegetables and animal products called:",o:["Rubbish","Trash","Garbage","Waste"],a:2,e:"GARBAGE = solid waste from food, vegetables and animal products. Rubbish = non-food dry waste."},
+
+  {p:"1",s:"ENT 111",q:"Sources of noise pollution EXCEPT:",o:["Night clubs","Hospitals","Quarries","Factories"],a:1,e:"Hospitals should be QUIET — they are NOT sources of noise pollution."},
+
+  {p:"1",s:"ENT 111",q:"Harmful traditions influencing health EXCEPT:",o:["Female genital cutting","Drinking blue for family planning","Male circumcision","Taboo marks/Scarification"],a:2,e:"Male circumcision = BENEFICIAL (reduces HIV risk, UTIs). The others listed are harmful practices."},
+
+  {p:"1",s:"ENT 111",q:"Cultural factors affecting health EXCEPT:",o:["Literacy level","Taboos","Beliefs","Tradition"],a:0,e:"Literacy level = NOT a cultural factor — it is a social/educational factor. Cultural: taboos, beliefs, tradition."},
+
+  {p:"1",s:"CHE 240",q:"NOT within scope of occupational health:",o:["Pre-employment medical exam","Control of work environment","Providing accommodation for workers","Control of workplace effluent"],a:2,e:"Providing accommodation = HR/welfare function, NOT occupational health scope."},
+
+  {p:"1",s:"CHE 240",q:"ILO/WHO occupational health aim (1950):",o:["Maximum productivity only","Maintain highest physical, mental and social wellbeing of workers","Provide entertainment","Manage hospital services"],a:1,e:"ILO/WHO (1950) = Maintain HIGHEST degree of physical, mental and social wellbeing of ALL workers."},
+
+  {p:"1",s:"CHE 240",q:"NOT a factor affecting health in Nigeria:",o:["Environmental factors","Social factors","Cultural factors","Professional factors"],a:3,e:"Professional factors are NOT recognized as health-affecting factors. Real factors: environmental, social, cultural, economic."},
+
+  {p:"1",s:"CHE 233",q:"Disadvantage of village system of mental health care:",o:["Reduces rate of relapse","Allows relatives to participate","Patients refusal of drugs","Promotes effective rehabilitation"],a:2,e:"Patients' refusal of drugs = a disadvantage of the village system of mental health care."},
+
+  {p:"1",s:"CHE 233",q:"Medical sociology involves study of all EXCEPT:",o:["Medical education","Conflict and conflict management","Health policy and politics","Social and community psychiatry"],a:1,e:"Conflict and conflict management is NOT a core subject of medical sociology."},
+
+  {p:"1",s:"CHE 221",q:"Symptom can be described as:",o:["Objective evidence of disease","What observer sees","Subjective evidence felt by patient","What doctor measures"],a:2,e:"Symptom = SUBJECTIVE evidence — only the patient can feel it (pain, dizziness, nausea)."},
+
+  {p:"1",s:"CHE 221",q:"Tetanus is caused by:",o:["Poliomyelitis virus","Salmonella","Shigella","Clostridium tetani"],a:3,e:"Tetanus = Clostridium tetani. Typhoid = Salmonella typhi. Dysentery = Shigella."},
+
+  {p:"1",s:"CHE 221",q:"NOT a type of teeth in human:",o:["Molars","Pre-molars","Pre-canines","Canines"],a:2,e:"Pre-canines do NOT exist. Human teeth: Incisors, Canines, Premolars, Molars."},
+
+  {p:"1",s:"CHE 221",q:"Factor that CANNOT influence teeth eruption:",o:["Diet and nutrition","Stress","Congenital problems","Infections"],a:1,e:"Stress does NOT directly influence teeth eruption."},
+
+  {p:"1",s:"CHE 226",q:"Emergency conditions EXCEPT:",o:["Shock","Dysentery","Asphyxia","3rd degree burns"],a:1,e:"Dysentery = NOT an emergency condition. Emergencies: shock, asphyxia, 3rd degree burns, fractures."},
+
+  {p:"1",s:"CHE 226",q:"NOT a type of fracture:",o:["Greenstick","Contused fracture","Depressed","Pathological"],a:1,e:"Contused fracture DOES NOT EXIST. Real types: Greenstick, Compound, Comminuted, Depressed, Pathological."},
+
+  {p:"1",s:"CHE 226",q:"NOT a symptom of snake bite:",o:["Deformity","Pain","Fainting","Difficulty breathing"],a:0,e:"DEFORMITY = sign of FRACTURE, NOT snake bite. Snake bite: pain, swelling, fang marks, dizziness."},
+
+  {p:"1",s:"CHE 226",q:"Shock from severe pain is called:",o:["Haemorrhagic shock","Hypovolaemic shock","Septicaemic shock","Neurogenic shock"],a:3,e:"Neurogenic shock = from SEVERE PAIN or emotional trauma → vasodilation."},
+
+  {p:"1",s:"CHE 226",q:"Instrument used for measuring blood pressure:",o:["Thermometer and tape","Sphygmomanometer and stethoscope","Stethoscope and thermometer","Auroscope and sphygmomanometer"],a:1,e:"BP = Sphygmomanometer + Stethoscope. Normal: 120/80 mmHg. Hypertension: ≥140/90 mmHg."},
+
+  // PAPER 2
+  {p:"2",s:"CHE 246",q:"Cases NOT in standing orders are usually:",o:["Managed off-hand","Referred to higher level","Sent patient home","Refused treatment"],a:1,e:"Cases NOT in standing orders = REFERRED TO HIGHER LEVEL. JCHEW→CHEW, CHEW→CHO/Doctor."},
+
+  {p:"2",s:"CHE 246",q:"Albustix is used to test urine for:",o:["Glucose","Albumin/protein","Blood","Ketones"],a:1,e:"Albustix = tests urine for ALBUMIN/PROTEIN. Positive = proteinuria (pre-eclampsia, UTI, nephritis)."},
+
+  {p:"2",s:"CHE 246",q:"Mantoux test PPD is injected:",o:["Subcutaneously","Intramuscularly","Intradermally","Intravenously"],a:2,e:"Mantoux test = INTRADERMALLY. PPD = 0.1ml/10,000 dilution (1 tuberculin unit). Read after 24-72 hours."},
+
+  {p:"2",s:"CHE 246",q:"Normal eardrum on auroscopy appears:",o:["Red and inflamed","White and opaque","Grey and shiny","Yellow with discharge"],a:2,e:"Normal eardrum = GREY AND SHINY. Red = infection. Yellow = pus/infection."},
+
+  {p:"2",s:"CHE 246",q:"Ear canal cleaned by all EXCEPT:",o:["Wicking","Dry mopping","Syringing","Cotton buds"],a:3,e:"Cotton buds NEVER in ear canal — pushes wax deeper, damages tympanic membrane."},
+
+  {p:"2",s:"CHE 246",q:"JCHEW complaint not in standing orders managed by:",o:["Refer to a CHEW","Refer to traditional healer","Use past experience","Keep trying"],a:0,e:"JCHEW → CHEW (one step up). Pathway: JCHEW→CHEW→CHO→Doctor→Secondary→Tertiary."},
+
+  {p:"2",s:"CHE 223",q:"MUAC measurement uses:",o:["Tape measure","Ruler","Shakir's strip","Weighing scale"],a:2,e:"MUAC uses SHAKIR'S STRIP applied at MIDPOINT between elbow and shoulder."},
+
+  {p:"2",s:"CHE 223",q:"Normal visual acuity on Snellen chart:",o:["6/9","6/6","6/12","6/18"],a:1,e:"Normal visual acuity = 6/6. Measured at 6 metres. <3/60 = legal blindness."},
+
+  {p:"2",s:"CHE 223",q:"Auroscope speculum size for adults:",o:["Small aperture","Medium aperture","Large aperture","No speculum needed"],a:2,e:"Auroscope speculum: SMALL = children, MEDIUM = adolescents, LARGE = adults."},
+
+  {p:"2",s:"CHE 223",q:"Normal temperature range:",o:["35-36 degrees C","36.5-37.5 degrees C","38-39 degrees C","37.5-38.5 degrees C"],a:1,e:"Normal temperature = 36.5-37.5 degrees C. Below 36.5 = hypothermia. Above 37.5 = fever."},
+
+  {p:"2",s:"CHE 223",q:"Normal pulse rate per minute:",o:["40-60 bpm","60-100 bpm","100-120 bpm","120-140 bpm"],a:1,e:"Normal pulse = 60-100 bpm. Bradycardia = below 60 bpm. Tachycardia = above 100 bpm."},
+
+  {p:"2",s:"CHE 223",q:"Haemoglobin (Tallquist method) — blood sample from:",o:["Vein","Artery","Finger prick","Earlobe only"],a:2,e:"Tallquist paper method = blood from FINGER PRICK. Compare blood stain with colour reference chart."},
+
+  {p:"2",s:"CHE 224",q:"Pentavalent vaccine constitutes:",o:["3 vaccines in 1","6 vaccines in 1","5 vaccines in 1","4 vaccines in 1"],a:2,e:"Pentavalent = 5 vaccines: Diphtheria+Pertussis+Tetanus+Hepatitis B+Hib. Given at 6, 10, 14 weeks."},
+
+  {p:"2",s:"CHE 224",q:"Cold box is:",o:["Container with ice cubes","Van for transportation","Equipment for vaccine storage to maintain potency","Equipment for distributing materials"],a:2,e:"Cold box = equipment for STORING vaccines to MAINTAIN POTENCY (+2 to +8 degrees C)."},
+
+  {p:"2",s:"CHE 224",q:"Vaccine that should NOT be frozen EXCEPT:",o:["Pentavalent","Tetanus toxoid","Hepatitis B","Oral polio vaccine"],a:3,e:"OPV (Oral Polio Vaccine) CAN be frozen. NEVER freeze: Pentavalent, TT, HepB, PCV."},
+
+  {p:"2",s:"CHE 224",q:"Active immunity is characterized by:",o:["Ready-made antibodies from outside","Short-lasting protection","Body producing OWN antibodies","Antibodies via breast milk"],a:2,e:"Active immunity = body produces OWN antibodies = LONG-LASTING. Passive = ready-made = SHORT-LASTING."},
+
+  {p:"2",s:"CHE 224",q:"Causative agent of plague:",o:["Plague virus","Treponema pallidum","Yersinia pestis","Chlamydia trachomatis"],a:2,e:"Plague = Yersinia pestis. Syphilis = Treponema pallidum. Trachoma = Chlamydia trachomatis."},
+
+  {p:"2",s:"CHE 224",q:"Passive natural immunity refers to:",o:["Induced by vaccine","Long-lasting immunity","Antibodies from serums","Antibodies via placenta or breast milk"],a:3,e:"Passive Natural = antibodies from MOTHER via placenta/breast milk. SHORT-LASTING."},
+
+  {p:"2",s:"CHE 225",q:"Master endocrine gland:",o:["Adrenal gland","Thyroid gland","Thyroxin","Pituitary gland"],a:3,e:"Pituitary = MASTER endocrine gland. Controls thyroid, adrenal, gonads. Located at base of brain."},
+
+  {p:"2",s:"CHE 225",q:"10th cranial nerve is called:",o:["Trochlear nerve","Abducens nerve","Hypoglossal nerve","Vagus nerve"],a:3,e:"10th cranial nerve = VAGUS nerve. Controls heart rate, digestion, breathing."},
+
+  {p:"2",s:"CHE 225",q:"Rods and cones are present on:",o:["Optic nerve","Lens","Cornea","Retina"],a:3,e:"Rods and cones = on the RETINA. Rods = dim light/motion. Cones = colour/bright light."},
+
+  {p:"2",s:"CHE 225",q:"Inner layer of skin contains all EXCEPT:",o:["Sweat glands","Dermis","Blood vessels","Epidermis"],a:3,e:"Epidermis = OUTER layer (avascular). Dermis = INNER layer (blood vessels, sweat glands, hair follicles)."},
+
+  {p:"2",s:"CHE 225",q:"NOT a long bone:",o:["Femur","Innominate bone","Humerus","Tibia"],a:1,e:"Innominate bone (hip bone) = IRREGULAR bone. Long bones: Femur, Humerus, Tibia, Fibula."},
+
+  {p:"2",s:"CHE 225",q:"NOT a gram-negative organism:",o:["Klebsiella pneumoniae","Neisseria gonorrhoeae","Yersinia pestis","Streptococcus pneumoniae"],a:3,e:"Streptococcus pneumoniae = GRAM-POSITIVE. Gram-negative: Klebsiella, Neisseria, Yersinia, E. coli."},
+
+  {p:"2",s:"CHE 231",q:"Hormone initiating breast milk production:",o:["Oxytocin","Adrenaline","Progesterone","Prolactin"],a:3,e:"Prolactin = milk PRODUCTION. Oxytocin = milk EJECTION + uterine contractions."},
+
+  {p:"2",s:"CHE 231",q:"NOT part of female reproductive system:",o:["Fallopian tube","Testis","Uterus","Urethra"],a:1,e:"Testis is part of MALE reproductive system. Female: Fallopian tubes, uterus, ovaries, vagina."},
+
+  {p:"2",s:"CHE 231",q:"Largest artery in human body:",o:["Pulmonary artery","Thoracic artery","Abdominal aorta","Aorta"],a:3,e:"AORTA = largest artery. Arises from left ventricle, carries oxygenated blood to whole body."},
+
+  {p:"2",s:"CHE 231",q:"Ventricular contraction is called:",o:["Diastolic","Pulse","Cardiac output","Systolic"],a:3,e:"SYSTOLIC = ventricular CONTRACTION. DIASTOLIC = relaxation. Normal BP: 120/80 mmHg."},
+
+  {p:"2",s:"CHE 261",q:"Comparison of achievement with target is called:",o:["Monitoring","Decision making","Programming","Evaluation"],a:0,e:"MONITORING = ongoing comparison of ACHIEVEMENT with TARGET. EVALUATION = coverage, outcome, efficiency."},
+
+  {p:"2",s:"CHE 261",q:"Coverage, outcome and efficiency measured at:",o:["Implementation","Planning","Supervision","Evaluation"],a:3,e:"EVALUATION measures: Coverage (proportion reached), Outcome (changes achieved), Efficiency (cost-effectiveness)."},
+
+  {p:"2",s:"CHE 261",q:"Standard job description does NOT contain:",o:["Job summary","Qualification","Duties","Curriculum vitae"],a:3,e:"Curriculum vitae submitted by APPLICANT — not part of job description."},
+
+  {p:"2",s:"CHE 261",q:"Training implies:",o:["Going to school for certificate","Learning a skill only","Way of preparing someone to acquire knowledge and skills","Act of learning a job"],a:2,e:"Training = systematic preparation to acquire KNOWLEDGE, SKILLS AND ATTITUDES for effective job performance."},
+
+  {p:"2",s:"CHE 261",q:"Function of management applicable to ALL levels:",o:["Organization","Controlling","Staffing","Planning"],a:3,e:"PLANNING = function applicable to ALL levels of management."},
+
+  {p:"2",s:"CHE 261",q:"NOT a true description of a health team:",o:["Group working towards a goal","Group working for personal goals","Group working for common purpose","Group working together for common objective"],a:1,e:"Working for PERSONAL goals is the OPPOSITE of teamwork — a team works for COMMON goals."},
+
+  {p:"2",s:"CHE 261",q:"Advantage of teamwork in healthcare delivery:",o:["Difficult to operate","Creates vacuum","Personality differences","Promotes effective health care"],a:3,e:"Teamwork = promotes effective health care delivery through collaboration."},
+
+  {p:"2",s:"CHE 263",q:"Principal book of account is:",o:["Cash book","Ledger","Journal","Petty cash book"],a:1,e:"LEDGER = principal book of account. Cash book, journal, petty cash = subsidiary books."},
+
+  {p:"2",s:"CHE 263",q:"NOT a book of account:",o:["Trial balance","Balance sheet","Allocation Ledger","Day book"],a:0,e:"Trial balance is NOT a book of account — it is a checking mechanism."},
+
+  {p:"2",s:"CHE 264",q:"Statistics of events relating to birth, death and marriage:",o:["Health statistics","Biostatistics","Vital statistics","Demography statistics"],a:2,e:"VITAL STATISTICS = records of birth, death, marriage and similar events."},
+
+  {p:"2",s:"CHE 264",q:"Registers necessary for data collection EXCEPT:",o:["Laboratory register","Family planning register","Out-patient register","TBA labour and delivery register"],a:3,e:"TBA labour and delivery register is NOT a standard HMIS register for formal PHC facilities."},
+
+  {p:"2",s:"CHE 253",q:"Allocation of subjects to reduce bias in research:",o:["Randomization","Manipulation","Experimentation","Sampling"],a:0,e:"RANDOMIZATION = allocation to reduce element of bias in research."},
+
+  {p:"2",s:"CHE 253",q:"Vital statistics deals primarily with records of:",o:["Death","Sickness","Out-patient record","Number of health facilities"],a:0,e:"Vital statistics = deals primarily with DEATH (and birth, marriage) records."},
+
+  {p:"2",s:"CHE 253",q:"Factors that do NOT affect population:",o:["Increase in birth rate","Immigration","Decrease in birth rate","Census"],a:3,e:"Census COUNTS population — it does NOT change population size. Factors: birth rate, death rate, migration."},
+
+  {p:"2",s:"CHE 242",q:"NOT indicative of pre-eclampsia:",o:["Protein in urine","Raised blood pressure","Glucose in urine","Bilateral pitting pedal oedema"],a:2,e:"GLUCOSE in urine = DIABETES, NOT pre-eclampsia! Pre-eclampsia: BP 140/90+PROTEINURIA+OEDEMA."},
+
+  {p:"2",s:"CHE 242",q:"Obstetric drug NO LONGER in use because of BP effect:",o:["Ergometrine","Misoprostol","Oxytocin","Magnesium Sulphate"],a:0,e:"Ergometrine = NO LONGER USED because of dangerous blood pressure effects."},
+
+  {p:"2",s:"CHE 242",q:"APH caused by all EXCEPT:",o:["Placenta praevia","Uterine trauma","Placenta abruptio","Abnormal presentation"],a:3,e:"Abnormal presentation does NOT cause APH. APH: Placenta praevia, Abruptio, Uterine trauma."},
+
+  {p:"2",s:"CHE 242",q:"Delay in second stage of labour caused by all EXCEPT:",o:["Pre-eclampsia","Poor maternal effort","Cord around neck","Compound presentation"],a:0,e:"Pre-eclampsia does NOT cause delay in 2nd stage. Causes: poor effort, cord, CPD, malposition."},
+
+  {p:"2",s:"CHE 242",q:"KMC (Kangaroo Mother Care) is:",o:["Regular temperature check","KAP assessment","Skin-to-skin contact mother and newborn","Knowledge assessment"],a:2,e:"KMC = skin-to-skin contact between mother and newborn. Benefits: prevents hypothermia, promotes bonding."},
+
+  {p:"2",s:"CHE 242",q:"Normal full-term baby at birth — all EXCEPT:",o:["Cries immediately","Weight 3.5kg","Active movement","Colour blue"],a:3,e:"Colour BLUE = cyanosis = ABNORMAL → immediate neonatal resuscitation needed."},
+
+  {p:"2",s:"CHE 242",q:"Weaning is defined as:",o:["Total withdrawal from breast milk","Giving artificial food","Introducing family food","Systematic withdrawal from the breast"],a:3,e:"Weaning = SYSTEMATIC (gradual) withdrawal from the breast."},
+
+  // PAPER 3
+  {p:"3",s:"CHE 234",q:"Coitus interruptus is:",o:["Test of infertility","The safe period","Withdrawal before ejaculation","Avoidance of mineral food"],a:2,e:"Coitus interruptus = withdrawal BEFORE ejaculation. A natural family planning method."},
+
+  {p:"3",s:"CHE 234",q:"LAM requires all THREE of these:",o:["Partial breastfeeding+amenorrhoea+<12 months","EBF+less than 6 months+amenorrhoea","EBF+less than 12 months+amenorrhoea","Partial breastfeeding+6 months+menstruation"],a:1,e:"LAM requires: Exclusive Breastfeeding + baby less than 6 months + amenorrhoea (all 3 must be present)."},
+
+  {p:"3",s:"CHE 234",q:"High risk group for HIV EXCEPT:",o:["Faithful wedded couples","Commercial sex workers","People with multiple sex partners","Adolescents"],a:0,e:"Faithful monogamous couples = LOWEST risk. High risk: CSWs, multiple partners, adolescents, IDUs."},
+
+  {p:"3",s:"CHE 234",q:"HIV/AIDS spread is enhanced by:",o:["Prompt treatment of gonorrhoea","Prompt treatment of UTI","Use of condom","Inappropriate HIV/AIDS counselling"],a:3,e:"HIV spread ENHANCED by inappropriate counselling. NOT enhanced by: STI treatment, condom use."},
+
+  {p:"3",s:"CHE 234",q:"GATHER approach is used for:",o:["Nutrition counselling","Family planning counselling","Mental health assessment","Community diagnosis"],a:1,e:"GATHER = Greet, Ask, Tell, Help, Explain, Return — used for FAMILY PLANNING counselling."},
+
+  {p:"3",s:"CHE 234",q:"Contraceptive method EXCEPT:",o:["Jaundice","Condom","Voluntary surgical contraceptive","Lactating amenorrhoea method"],a:0,e:"Jaundice = a DISEASE, not a contraceptive method. Methods: condom, VSC, LAM."},
+
+  {p:"3",s:"CHE 232",q:"Common cause of gingivitis in rural community:",o:["Mouth odour","Sinusitis","Deposits on teeth","Poor oral hygiene"],a:3,e:"Poor oral hygiene = most common cause of gingivitis. Prevention: twice-daily brushing."},
+
+  {p:"3",s:"CHE 232",q:"NOT a type of human tooth:",o:["Molars","Pre-molars","Pre-canines","Canines"],a:2,e:"Pre-canines do NOT exist. Human teeth: Incisors, Canines, Premolars, Molars."},
+
+  {p:"3",s:"CHE 232",q:"Factor CANNOT influence teeth eruption:",o:["Diet and nutrition","Stress","Congenital problems","Infections"],a:1,e:"Stress does NOT directly influence teeth eruption."},
+
+  {p:"3",s:"CHE 235",q:"EBF (Exclusive Breastfeeding) means:",o:["Breast milk only for 6 months","Breast milk only for 2-3 months","Breast milk only for 1 year","Breast milk for 5 months"],a:0,e:"EBF = breast milk ONLY for first 6 months — NO water, juice, food, or anything else."},
+
+  {p:"3",s:"CHE 235",q:"A child is in GRAVE danger if:",o:["Feeding well","Haemoglobin above 12g/dl","Has moderate anaemia","Has stiff neck"],a:3,e:"STIFF NECK = meningitis = GRAVE DANGER → IMMEDIATE referral."},
+
+  {p:"3",s:"CHE 235",q:"Growth monitoring importance EXCEPT:",o:["Monitor nutrition","Monitor weight gain","Identify children at risk","Monitor mother's nutrition status"],a:3,e:"Growth monitoring is for the CHILD — NOT to monitor the mother's nutrition status."},
+
+  {p:"3",s:"CHE 235",q:"In marasmus management, feed child with:",o:["Rice, maize, beans, plantain, groundnut","Beans, yam, rice, meat, carrot","Rice, porridge, potatoes, vegetable","Millet, vegetable, beans, fish"],a:0,e:"Marasmus: Rice + Maize + Beans + Plantain + Groundnut — energy-dense + protein-rich combination."},
+
+  {p:"3",s:"CHE 235",q:"Direct method of assessing child nutritional status:",o:["Breastfeeding pattern","Pattern of weight gain","Family food budget","Mother's level of education"],a:1,e:"Pattern of weight gain = DIRECT method of nutritional assessment. Others are indirect indicators."},
+
+  {p:"3",s:"CHE 235",q:"Main unit of socialization of a child:",o:["School","Society","Family","Mosque/Church"],a:2,e:"FAMILY = main (primary) unit of socialization of a child."},
+
+  {p:"3",s:"CHE 235",q:"EBF promotes all EXCEPT:",o:["Love and affection","Immunity against diseases","Juvenile delinquency","Growth and development"],a:2,e:"Juvenile delinquency is NOT promoted by EBF — there is no link. EBF promotes: love, immunity, growth."},
+
+  {p:"3",s:"CHE 236",q:"Medical conditions in school physical exam EXCEPT:",o:["Tinea capitis","Conjunctivitis","Nasal discharge","Arthritis"],a:3,e:"ARTHRITIS not typically a condition in school health exam. Checks: Tinea capitis, conjunctivitis, nasal discharge."},
+
+  {p:"3",s:"CHE 236",q:"School services evaluated through all EXCEPT:",o:["Interviewing market women","Interviewing teachers","Direct observation","Use of existing records"],a:0,e:"Interviewing MARKET WOMEN = NOT a way to evaluate school health services."},
+
+  {p:"3",s:"CHE 236",q:"Component of school health programme:",o:["Punctuality to school","School meal services","Student discipline","Classroom management"],a:1,e:"School meal services = school health programme component. Punctuality, discipline = school administration."},
+
+  {p:"3",s:"CHE 236",q:"NOT a delinquent behaviour among adolescents:",o:["Increased appetite","Truancy","Aggressiveness in community","Hanging around dark corners"],a:0,e:"Increased appetite = NORMAL adolescent behaviour, NOT delinquent."},
+
+  {p:"3",s:"CHE 225",q:"NOT a helminthic disease:",o:["Paragonomiasis","Bilharziasis","Onchocerciasis","Amoebiasis"],a:3,e:"Amoebiasis = PROTOZOAN (Entamoeba histolytica). Helminths: Paragonomiasis, Bilharziasis, Onchocerciasis."},
+
+  {p:"3",s:"CHE 225",q:"Arthropods of public health importance are generally known as:",o:["Insects","Vectors","Rodents","Mosquitoes"],a:1,e:"Arthropods = VECTORS. They transmit diseases from one host to another."},
+
+  {p:"3",s:"CHE 225",q:"Cultural theory of disease causation EXCEPT:",o:["Male circumcision","Act of God","Prolonged breast feeding","Forbidden hardwork for pregnant mothers"],a:1,e:"Act of God = a cultural/religious theory of disease causation."},
+
+  {p:"3",s:"CHE 244",q:"Ear canal cleaned by all EXCEPT:",o:["Wicking","Dry mopping","Syringing","Cotton buds"],a:3,e:"Cotton buds NEVER in ear canal — pushes wax deeper, damages tympanic membrane."},
+
+  {p:"3",s:"CHE 244",q:"Sources of noise pollution EXCEPT:",o:["Night clubs","Hospitals","Quarries","Factories"],a:1,e:"Hospitals should be QUIET — they are NOT sources of noise pollution."},
+
+  {p:"3",s:"CHE 244",q:"Normal eardrum on auroscopy:",o:["Red and inflamed","White and opaque","Grey and shiny","Yellow with discharge"],a:2,e:"Normal eardrum = GREY AND SHINY. Red = infection. Yellow = pus."},
+
+  {p:"3",s:"CHE 245",q:"Signs of cataract EXCEPT:",o:["Clouded vision","Blurred vision","Difficulty with vision at night","Itching of the conjunctiva"],a:3,e:"Itching of conjunctiva = NOT a cataract sign. Cataract: clouded vision, blurred, difficulty at night."},
+
+  {p:"3",s:"CHE 245",q:"Causes of blindness EXCEPT:",o:["Using dark glasses to protect the eyes","Diabetes","Macular degeneration","Traumatic injury to the eye"],a:0,e:"Using dark glasses to PROTECT eyes = PREVENTS blindness, not a cause."},
+
+  {p:"3",s:"CHE 245",q:"SAFE strategy is used for:",o:["Cataract","Glaucoma","Trachoma","Diabetic retinopathy"],a:2,e:"SAFE = Surgery+Antibiotics+Facial cleanliness+Environmental improvement = TRACHOMA strategy."},
+
+  {p:"3",s:"CHE 245",q:"Normal visual acuity:",o:["6/9","6/6","6/12","6/18"],a:1,e:"Normal visual acuity = 6/6 (Snellen chart at 6 metres). Less than 3/60 = legal blindness."},
+
+  {p:"3",s:"CHE 251",q:"Medical problem of older persons — all EXCEPT:",o:["Idleness","Deafness","Arthritis","Poor sight"],a:0,e:"Idleness = SOCIAL problem, NOT medical. Medical: deafness, arthritis, poor eyesight, hypertension."},
+
+  {p:"3",s:"CHE 251",q:"Health benefits of exercise in elderly EXCEPT:",o:["Improvement of cardiorespiratory functions","Increase muscle strength and flexibility","Increased sociability","Provide financial support"],a:3,e:"Exercise does NOT provide financial support. Benefits: cardiorespiratory improvement, muscle strength."},
+
+  {p:"3",s:"CHE 251",q:"Handicapping conditions found in community EXCEPT:",o:["Mental retardation","Malnutrition","Sickle cell disease","Deafness"],a:1,e:"Malnutrition is NOT a handicapping condition — it is a nutritional disorder. Handicapping: mental retardation, sickle cell, deafness."},
+
+  {p:"3",s:"CHE 251",q:"Gerontology is the study of:",o:["Genetics","Handicapped persons","Adolescents","Ageing process"],a:3,e:"Gerontology = scientific study of the AGEING process and elderly people. Old age = from 65 years."},
+
+  {p:"3",s:"CHE 252",q:"Persons with special needs desire all EXCEPT:",o:["Desire to be pitied and given alms","Going to school","Attending religious functions","Being listened to"],a:0,e:"Persons with disabilities want INCLUSION — not pity or alms. They want education, employment, dignity."},
+
+  {p:"3",s:"CHE 252",q:"Male circumcision is:",o:["Widening of urethral orifice","Removal of glans of penis","Removal of prepuce of penis","Removal of clitoris"],a:2,e:"Male circumcision = removal of PREPUCE (foreskin). FGM = removal of clitoris = harmful practice."},
+
+  {p:"3",s:"CHE 252",q:"Person consistently NOT conforming to society norms:",o:["Uncompromising","Deviant","Extrovert","Aggressive"],a:1,e:"DEVIANT = person who consistently does not conform to society's norms."},
+
+  {p:"3",s:"CHE 252",q:"CHEW NOT likely to earn client confidence through:",o:["Maintaining privacy","Neglect of client","Reassurance","Professional dress"],a:1,e:"Neglect of client = DESTROYS confidence. Confidence earned by: privacy, reassurance, professional appearance."},
+
+  {p:"3",s:"CHE 237",q:"Features of NCDs EXCLUDE:",o:["Multi-factorial origin","Long period of care","Permanent residual effects","Must be of pathogenic cause"],a:3,e:"NCDs = NOT caused by pathogens. Features: multi-factorial, long duration, permanent effects."},
+
+  {p:"3",s:"CHE 237",q:"Hypertension is defined as BP:",o:["120/80 mmHg","130/85 mmHg","140/90 mmHg or above","150/95 mmHg"],a:2,e:"Hypertension = BP 140/90 mmHg or above on two separate occasions. Normal = 120/80 mmHg."},
+
+  {p:"3",s:"CHE 237",q:"Glucose in urine indicates:",o:["Pre-eclampsia","Proteinuria","Diabetes mellitus","UTI"],a:2,e:"Glucose in urine = GLYCOSURIA = DIABETES MELLITUS. NOT pre-eclampsia (which = proteinuria)."},
+
+  {p:"3",s:"CHE 237",q:"NCDs are NOT transmitted person-to-person. They include all EXCEPT:",o:["Hypertension","Malaria","Diabetes mellitus","Sickle cell disease"],a:1,e:"Malaria is a COMMUNICABLE disease caused by Plasmodium parasite, transmitted by Anopheles mosquito."},
+
+  {p:"3",s:"CHE 257",q:"Normal full-term baby at birth — all EXCEPT:",o:["Colour blue","Cry immediately","Weight 3.5kg","Active movement"],a:0,e:"Colour BLUE = cyanosis = ABNORMAL → immediate neonatal resuscitation needed."},
+
+  {p:"3",s:"CHE 257",q:"Vaccine given at birth in Nigeria EPI:",o:["Pentavalent","BCG and OPV0","Measles","PCV"],a:1,e:"At BIRTH: BCG (tuberculosis) + OPV0 (Oral Polio Vaccine). Given immediately after delivery."},
+
+  {p:"3",s:"CHE 257",q:"KMC (Kangaroo Mother Care) is:",o:["Regular temperature check","KAP assessment","Skin-to-skin contact mother and newborn","Knowledge assessment"],a:2,e:"KMC = skin-to-skin contact. Benefits: prevents hypothermia, promotes bonding, encourages breastfeeding."},
+
+  {p:"3",s:"CHE 257",q:"Normal newborn temperature range:",o:["35-36 degrees C","36.5-37.5 degrees C","38-39 degrees C","37.5-38.5 degrees C"],a:1,e:"Normal newborn temperature = 36.5-37.5 degrees C. Below 36.5 = hypothermia (danger sign)."},
+
+  {p:"3",s:"CHE 239",q:"HIV/AIDS spread enhanced by:",o:["Prompt treatment of gonorrhoea","Prompt treatment of UTI","Use of condom","Inappropriate HIV/AIDS counselling"],a:3,e:"HIV spread ENHANCED by inappropriate counselling. NOT enhanced by STI treatment or condom use."},
+
+  {p:"3",s:"CHE 239",q:"Function of the family EXCEPT:",o:["Sexual regulation","Economic support","Socialization","Mechanical function"],a:3,e:"Mechanical function is NOT a family function. Family functions: sexual regulation, economic support, socialization."},
+
+  {p:"3",s:"CHE 239",q:"What does NOT promote effective health education:",o:["Respect for tradition","Being a good listener","Lack of electricity","Favorable environment"],a:2,e:"Lack of electricity = BARRIER to health education (cannot use audiovisual aids). Others promote it."},
+
+{p:"1",s:"CHE 213",q:"All of the following are not etiquettes to be observed by the Community Health Practitioner EXCEPT",o:["Be warm and attentive","Be religious","Be egoistical","Be self-important"],a:2,e:"Correct answer: Be egoistical."},
+
+{p:"1",s:"CHE 233",q:"Etiquette can be defined as",o:["A system which guides and controls the moral behavior and manifest in character and mind","Code of manners behaviours and action","Qualities a person has learned to believe are important and worthwhile","Occupation which demands a high standard of education as well"],a:0,e:"Correct answer: A system which guides and controls the moral behavior and manifest in character and mind."},
+
+{p:"1",s:"CHE 211",q:"One of the following is the duty of the Community Health Practitioners",o:["Helping the individual and families to take action based on their tradition","Training others to be team members and not to cooperate with the development committee","Evaluate and conduct research to improve the health care of the community","Attending to sick and injured patient during working hours only"],a:2,e:"Correct answer: Evaluate and conduct research to improve the health care of the community."},
+
+{p:"1",s:"CHE 218",q:"Community Health Practitioners Registration Board of Nigeria was established by:",o:["Decree 60 of 1992","Decree 61 of 1992","Decree 61 of 1990","Decree 60 of 1990"],a:1,e:"Correct answer: Decree 61 of 1992."},
+
+{p:"1",s:"GNP 123",q:"Breaching of ethics is generally viewed with:",o:["Approval and praise by the whole society","Disapproval by the selected few in the society","Disapproval by the totality of the society","Approval by the professional body in the society"],a:1,e:"Correct answer: Disapproval by the selected few in the society."},
+
+{p:"1",s:"CHE 233",q:"One of the following is NOT an acceptable behavior a professional should have",o:["Generally positive attitude towards work with a cheerful personality","Genuine desire to help people","Should offer explanation to patients on charges for services in an honest manner","Flare up with patients"],a:3,e:"Correct answer: Flare up with patients."},
+
+{p:"1",s:"CHE 213",q:"Educational technology used in communication includes all EXCEPT:",o:["Simulation","Flannel graph","Video Compact Disc (vcd)","Puppets"],a:2,e:"Correct answer: Video Compact Disc (vcd)."},
+
+{p:"1",s:"CHE 213",q:"Qualities of a good health educator include all but one",o:["Knowledge","Tolerance","Patience","Be willing to live and work in the community"],a:3,e:"Correct answer: Be willing to live and work in the community."},
+
+{p:"1",s:"CHE 213",q:"One of these is a technology used in communication",o:["Demonstration","Group discussion","Teleconferencing","Story telling"],a:2,e:"Correct answer: Teleconferencing."},
+
+{p:"1",s:"CHE 218",q:"One of the following is NOT an advantage of teaching aids:",o:["Arouse interest","Welcoming of the participants","Help teacher to make his points clear","Helps the teacher to consolidate his points"],a:1,e:"Correct answer: Welcoming of the participants."},
+
+{p:"1",s:"CHE 218",q:"To promote an effective group discussion session:",o:["Time and place is not relevant","Greet group in English language","Listen more than talk","Permit participants to introduce topic"],a:2,e:"Correct answer: Listen more than talk."},
+
+{p:"1",s:"CHE 213",q:"A person who sends message is known as;",o:["Decoder","Encoder","Receiver","Messenger"],a:1,e:"Correct answer: Encoder."},
+
+{p:"1",s:"CHE 218",q:"Personal factors that positively influence health include the following but one;",o:["Awareness about health matters","Education","Good personal hygiene","Attitudes of the health workers"],a:2,e:"Correct answer: Good personal hygiene."},
+
+{p:"1",s:"CHE 211",q:"PHC approach of the Nigerian Health System is;",o:["Qut – in approach","Bottom –up approach","In-out approach","Up-down approach"],a:1,e:"Correct answer: Bottom –up approach."},
+
+{p:"1",s:"CHE 211",q:"Which of the following constitutes a positive development in the Nigerian Health System since 1985?",o:["Preventive care","Curative care","Infrastructural development","Making PHC the pivot of National Health Policy"],a:3,e:"Correct answer: Making PHC the pivot of National Health Policy."},
+
+{p:"1",s:"CHE 218",q:"Any meaningful objectives of community health programme should be decided by:",o:["Members far away from the community","The opinion leaders of the community","The community members who are the beneficiary of the programme","Health worker posted to the community"],a:2,e:"Correct answer: The community members who are the beneficiary of the programme."},
+
+{p:"1",s:"CHE 211",q:"Which of these factors need not to be taken into consideration when establishing committees at PHC –LGA levels",o:["Title/name of the committee","Composition of the committee","Functions to be performed by the committee","High educational qualification of the nominee"],a:3,e:"Correct answer: High educational qualification of the nominee."},
+
+{p:"1",s:"CHE 218",q:"All but one of the following is NOT correct about a community",o:["Communities are always homogeneous","Communities usually have a leader","They often consist of different sub- groups","Is a group of people living in a specified geographical area/boundary"],a:0,e:"Correct answer: Communities are always homogeneous."},
+
+{p:"1",s:"CHE 218",q:"Which of the following is a goal /purpose of community diagnosis?",o:["Train Vvhin/tbas/jchews","Identify resources locally within the community to solve their problems","Hold meetings with community health Technicians","Making a list of available resources within the community"],a:1,e:"Correct answer: Identify resources locally within the community to solve their problems."},
+
+{p:"1",s:"CHE 218",q:"One of the following is an old bactericidal antibiotic",o:["Tetracycline","Erythromycin","Metronidazole","Gentamycin"],a:3,e:"Correct answer: Gentamycin."},
+
+{p:"1",s:"CHE 218",q:"The study of harmful chemical substances to the living tissue is",o:["Chemotherapy","Pharmaco- vigilance","Toxicology","Pharmacokinetic"],a:2,e:"Correct answer: Toxicology."},
+
+{p:"1",s:"CHE 254",q:"Which of these bests describes a drug?",o:["Any substance which when taken modifies body action","Drugs proven to be effective and satisfy the health needs of majority","Any substance taken to satisfy hunger","Any substance taken to prevent disease"],a:0,e:"Correct answer: Any substance which when taken modifies body action."},
+
+{p:"1",s:"CHE 254",q:"One of the following is not a characteristic of essential drugs;",o:["Safe to use","Cost effective","In expensive","Ineffective"],a:3,e:"Correct answer: Ineffective."},
+
+{p:"1",s:"CHE 254",q:"One of these is not a component of national essential drugs programmes",o:["Quantification","Stocking","Policy making","Procurement"],a:2,e:"Correct answer: Policy making."},
+
+{p:"1",s:"CHE 254",q:"Which of is not in the essential drugs list in PHC",o:["ivermectin","piroxicam","albendazole","acetic salicylic acid"],a:1,e:"Correct answer: piroxicam."},
+
+{p:"1",s:"CHE 218",q:"The effectiveness of outreach service can be assessed through the following, except one:",o:["Patient avoiding services","Patients’ attendance","Improvement in health status of people","Effect on other services"],a:0,e:"Correct answer: Patient avoiding services."},
+
+{p:"1",s:"CHE 218",q:"Immunization session during an outreach service can be conducted in the following areas but one:",o:["Health facility","Market place","Chiefs/emir palace","Schools"],a:0,e:"Correct answer: Health facility."},
+
+{p:"1",s:"CHE 218",q:"One is a rationale of two – way referral PHC;",o:["Explain/educate the patient on how to take medicine","Make supervision fair and easy","Ensure continuity care","Facilitates good flow of clients"],a:2,e:"Correct answer: Ensure continuity care."},
+
+{p:"1",s:"CHE 218",q:"All are reasons for developing Maps in PHC for outreach services, except one",o:["To identify area of activities","For administration of vaccines","To ensure movement of logistics","To facilitate adequate planning"],a:0,e:"Correct answer: To identify area of activities."},
+
+{p:"1",s:"CHE 218",q:"One of the following is NOT essential when probing or investigating age:",o:["Request for birth certificate","Compile a calendar of national and local events","Request for family meeting register","Request for family birth registers"],a:2,e:"Correct answer: Request for family meeting register."},
+
+{p:"1",s:"CHE 218",q:"A good index for assessing a country’s health status is:",o:["Vital statistics","Gross domestic product","Number of sky scrappers","Proportion of green forest"],a:0,e:"Correct answer: Vital statistics."},
+
+{p:"1",s:"CHE 218",q:"The first step in planning/conducting community diagnosis is:",o:["Making a sketch map","Making list of available resources","Identifying community boundaries","Making entry through the Lga"],a:3,e:"Correct answer: Making entry through the Lga."},
+
+{p:"1",s:"CHE 214",q:"All are functions of dietary fibres with the exception of:",o:["Satisfaction of hunger","It aids the formation of cholesterol","Attracts water, thereby increasing the bulk and softness of faecal matter","It stimulates and enhances bowel movement"],a:1,e:"Correct answer: It aids the formation of cholesterol."},
+
+{p:"1",s:"CHE 214",q:"Fat soluble group of vitamins consists of the following EXCEPT:",o:["Ascorbic acid","Retinol","Calciferol","Tocopherol"],a:0,e:"Correct answer: Ascorbic acid."},
+
+{p:"1",s:"CHE 214",q:"Amino acids are produced as a result of the breakdown of:",o:["Vitamins","Sugar","Proteins","Fat"],a:2,e:"Correct answer: Proteins."},
+
+{p:"1",s:"CHE 218",q:"Ascorbic acid deficiency leads to;",o:["Beri- beri","Rickettes","Scurvy","Pellagra"],a:2,e:"Correct answer: Scurvy."},
+
+{p:"1",s:"CHE 214",q:"All are ways through which food contamination can be controlled EXCEPT",o:["Good personal hygiene","Adequate cooking of food stuff","Proper disposal of human waste","Adequate nutrition"],a:3,e:"Correct answer: Adequate nutrition."},
+
+{p:"1",s:"CHE 214",q:"Solid waste of foods, vegetables and animal products are called:",o:["Rubbish","Trash","Garbage","Waste"],a:2,e:"Correct answer: Garbage."},
+
+{p:"1",s:"CHE 233",q:"One of the components of environmental health is:",o:["Provision of shelter","Examination of patient for silicosis","Provision of environmental hazards","Provision of healthful housing"],a:3,e:"Correct answer: Provision of healthful housing."},
+
+{p:"1",s:"ENT 111",q:"Air pollution is best described as:",o:["Mixing of oxygen and nitrogen","Introduction of foreign substances to the atmospheric air","Mixing of carbon dioxide with oxygen","Introducing air through air condition"],a:1,e:"Correct answer: Introduction of foreign substances to the atmospheric air."},
+
+{p:"1",s:"CHE 218",q:"When recommending sanitary disposal for a community, the following should be considered EXCEPT:",o:["Income of the family","Suitability of local materials","Station for information system","Level of water table"],a:3,e:"Correct answer: Level of water table."},
+
+{p:"1",s:"CHE 218",q:"One of the following is NOT an effective method of household treatment of water in rural community:",o:["Boiling","The household bowl and sand filter","Domestic chlorination","Water treatment plant"],a:3,e:"Correct answer: Water treatment plant."},
+
+{p:"1",s:"ENT 111",q:"The unit of measurement of noise is",o:["Barometer","Dosimeter","Decibel","Sound level metre"],a:2,e:"Correct answer: Decibel."},
+
+{p:"1",s:"CHE 240",q:"A branch of public health that deals with diseases that occur in the place of work and welfare of the workers refers to:",o:["Occupational health","Occupational disease","Occupational hazard","Occupational employment"],a:0,e:"Correct answer: Occupational health."},
+
+{p:"1",s:"CHE 240",q:"One of the following is an industrial disease of public health importance:",o:["Hypertension","Pneumoconiosis","Peptic Ulcer Disease (pud)","Migraine headache"],a:1,e:"Correct answer: Pneumoconiosis."},
+
+{p:"1",s:"CHE 240",q:"Light, heat and cold can be summarized as:",o:["Chemical hazards","Physical hazards","Occupational hazards","Industrial hazards"],a:1,e:"Correct answer: Physical hazards."},
+
+{p:"1",s:"CHE 240",q:"The adaptation of machine and their control to the physical and mental attributes of man is:",o:["Economics","Ergonomics","Ecology","Mechanics"],a:1,e:"Correct answer: Ergonomics."},
+
+{p:"1",s:"CHE 218",q:"Phobia has to do with:",o:["Fear of the unknown","Fear of the future","Excessive and irrational fear of objects or situations","Fear of examination"],a:2,e:"Correct answer: Excessive and irrational fear of objects or situations."},
+
+{p:"1",s:"CHE 218",q:"Mania has the following characteristics features EXCEPT:",o:["Solitude","Impaired judgment","Rational decisions","Mood swings"],a:2,e:"Correct answer: Rational decisions."},
+
+{p:"1",s:"CHE 233",q:"The following are classifications of mental disorders EXCEPT:",o:["Affective","Personality","Organic","Anxiety"],a:2,e:"Correct answer: Organic."},
+
+{p:"1",s:"CHE 233",q:"The following can cause negative mental health EXCEPT:",o:["Biological stress","Environmental stress","Psychosomatic stress","Psychological stress"],a:0,e:"Correct answer: Biological stress."},
+
+{p:"1",s:"CHE 218",q:"The IQ of the mentally retarded falls within the range of:",o:["50 – 80%","100 - 110%","90 – 100%","110 – 130%"],a:0,e:"Correct answer: 50 – 80%."},
+
+{p:"1",s:"CHE 218",q:"Wound can be defined as:",o:["Break in the continuity of the tissue","Break in the continuity of the bone","Escape of blood from the blood vessels","Shortage of blood supply to the brain"],a:0,e:"Correct answer: Break in the continuity of the tissue."},
+
+{p:"1",s:"CHE 218",q:"One of the following is NOT a type of wound",o:["Incised wound","Complete wound","Lacerated wound","Punctured wound"],a:1,e:"Correct answer: Complete wound."},
+
+{p:"1",s:"CHE 221",q:"Which of these is not a symptom of snake bite?",o:["Deformity","Pain","Fainting/dizziness","Difficult breathing"],a:0,e:"Correct answer: Deformity."},
+
+{p:"1",s:"CHE 226",q:"One of the following is NOT a type of fracture",o:["Green stick fracture","Contused fracture","Depressed fracture","Pathological fracture"],a:1,e:"Correct answer: Contused fracture."},
+
+{p:"1",s:"CHE 226",q:"The following are emergency conditions EXCEPT:",o:["Shock","Dysentery","Asphyxia","3rd degree burns"],a:1,e:"Correct answer: Dysentery."},
+
+{p:"1",s:"CHE 226",q:"A mishap that involves many people with varying degrees of injuries and sometimes deaths is referred to as:",o:["Road Traffic Accident","Motor accident","Mass casualty","Building collapse"],a:2,e:"Correct answer: Mass casualty."},
+
+{p:"1",s:"CHE 226",q:"Severe escape of blood from the body could result to one of the following:",o:["Hypovolaemic shock","Cardiogenic shock","Septic shock","Neurogenic shock"],a:0,e:"Correct answer: Hypovolaemic shock."},
+
+{p:"1",s:"CHE 211",q:"The code of conduct of Community Health Practitioners include the following EXCEPT:",o:["Use of Standing orders","Maintaining two-way referral system","Set a high standard of care","Engaging in sales of drugs"],a:3,e:"Correct answer: Engaging in sales of drugs."},
+
+{p:"1",s:"CHE 262",q:"Factors that promote and supports integrated PHC services exclude:",o:["Cohesive health team","Operational two-way referral system","Profit making mechanism","Efficient information system"],a:2,e:"Correct answer: Profit making mechanism."},
+
+{p:"1",s:"CHE 215",q:"Alma Ata definition of PHC emphasizes the following EXCEPT:",o:["Essential care","Practically and scientifically sound","Socially acceptable methods","Technology made inaccessible"],a:3,e:"Correct answer: Technology made inaccessible."},
+
+{p:"1",s:"CHE 218",q:"Sources of health care provision in Nigeria include all EXCEPT:",o:["Diagnostic services","Prayer houses","Orthodox services","Homeopathic services"],a:0,e:"Correct answer: Diagnostic services."},
+
+{p:"1",s:"CHE 218",q:"PHC strategies to achieve objectives include one of the following:",o:["Multi sectorial approach","Scheme for essential drugs","Organized workshops system","Planning to move to tertiary level"],a:3,e:"Correct answer: Planning to move to tertiary level."},
+
+{p:"1",s:"CHE 218",q:"One of these is a cultural theory of disease causation in Nigeria",o:["Act of God","Male circumcision","Forbidden hard work for pregnant mothers","Prolonged breastfeeding"],a:0,e:"Correct answer: Act of God."},
+
+{p:"1",s:"CHE 218",q:"For the sustainability of Community Health Programme and enhanced participation, one of the following is indispensable",o:["Community diagnosis","Community development","Community collaboration","Community mobilization"],a:3,e:"Correct answer: Community mobilization."},
+
+{p:"1",s:"CHE 213",q:"Advocacy in PHC means:",o:["Arguing with policy makers","Condemning the action of the policy makers","Arousing the interest of policy makers through dialogue","Using law enforcement agents"],a:2,e:"Correct answer: Arousing the interest of policy makers through dialogue."},
+
+{p:"1",s:"CHE 218",q:"Which of these is NOT an important symbol to be included in a key to a map of a state",o:["National boundary","Football pitch","Settlement with population of 500 or more","Tarred all weather road"],a:1,e:"Correct answer: Football pitch."},
+
+{p:"1",s:"CHE 254",q:"If a tablet of paracetamol available is 500mg and a patient is prescribed 1g, how many tablet(s) will the patient take?",o:["1 tablet","½ tablet","4 tablets","2 tablets"],a:3,e:"Correct answer: 2 tablets."},
+
+{p:"1",s:"CHE 254",q:"The drug of choice for the treatment of Schistosomiasis is:",o:["Praziquantel","Albendazole","Ciprofloxacin","Ivermectin"],a:0,e:"Correct answer: Praziquantel."},
+
+{p:"1",s:"CHE 254",q:"One of the following drugs in NOT classified according to function:",o:["Antimalarial","Antibiotics","Capsule","Antiemetics"],a:2,e:"Correct answer: Capsule."},
+
+{p:"1",s:"CHE 254",q:"All are sources of drugs EXCEPT:",o:["Recombinant Dna technology","Plant sources","Biodegradable source","Animal source"],a:2,e:"Correct answer: Biodegradable source."},
+
+{p:"1",s:"CHE 218",q:"Identify the odd one among the following under listed bactericidal antibiotics",o:["Gentamycin","Metronidazole","Erythromycin","Tetracycline"],a:0,e:"Correct answer: Gentamycin."},
+
+{p:"1",s:"CHE 254",q:"All the following are problems of Drug Revolving Fund (DRF) EXCEPT:",o:["Delay in payment","Adequate support by the local authority","Sudden price increase","Credit without equivalent subsidy"],a:1,e:"Correct answer: Adequate support by the local authority."},
+
+{p:"1",s:"CHE 254",q:"All are reasons for establishing essential drug list EXCEPT:",o:["Drug wastages","Drug abuse","National drug policy","High cost of health care"],a:2,e:"Correct answer: National drug policy."},
+
+{p:"1",s:"CHE 254",q:"Factors that determine the drug selection for a specific health facility include all EXCEPT:",o:["Acceptability","Ability of health workers to cover many patients","Prevailing health problems","Availability of funds"],a:1,e:"Correct answer: Ability of health workers to cover many patients."},
+
+{p:"1",s:"CHE 211",q:"Objectives of National Essential Drug Programme does not include:",o:["To appoint drug committee members from the community members","To make essential drugs available to the entire population","To improve health care delivery and patients flow","To reduce cost of drugs"],a:0,e:"Correct answer: To appoint drug committee members from the community members."},
+
+{p:"1",s:"CHE 214",q:"All are cases requiring outreach services EXCEPT:",o:["Immunization services","Family planning services","Food demonstration services","Major medical services"],a:3,e:"Correct answer: Major medical services."},
+
+{p:"1",s:"CHE 226",q:"All are cases for referral to the next level of care EXCEPT:",o:["Green stick fracture","Acute appendicitis","Renal failure","Strangulated hernia"],a:0,e:"Correct answer: Green stick fracture."},
+
+{p:"1",s:"CHE 262",q:"The importance of two-way referral system include all but one:",o:["Ensure continuity of care","Ensure adequacy of care","Cases are treated at appropriate level","Cases treated at community level"],a:2,e:"Correct answer: Cases are treated at appropriate level."},
+
+{p:"1",s:"CHE 262",q:"Two-way referral system in PHC means:",o:["Sending clients from health post to health centre","A CHEW sending a client to Vhw","Sending clients that cannot be managed effectively at a particular level and obtain feedback","Sending clients from health clinic to a teaching hospital"],a:2,e:"Correct answer: Sending clients that cannot be managed effectively at a particular level and obtain feedback."},
+
+{p:"1",s:"CHE 214",q:"The nutritional status of a child can be assessed directly by all the following EXCEPT:",o:["Weighing the child","Measuring Muac","Pattern of breastfeeding","General physical examination"],a:2,e:"Correct answer: Pattern of breastfeeding."},
+
+{p:"1",s:"GNP 123",q:"The rights of a client/patient include all except",o:["Right of consideration and respect","Informed, voluntary decision-making regarding consent","Withholding participation in ethical practice","Receiving health care in accordance with his/her specific need"],a:2,e:"Correct answer: Withholding participation in ethical practice."},
+
+{p:"1",s:"CHE 213",q:"One of the following is not a favorable way of effective health education",o:["Enforcement","Favourable environment","Community participation","Elimination of barriers"],a:0,e:"Correct answer: Enforcement."},
+
+{p:"1",s:"CHE 213",q:"The disadvantages of counselling do not include:",o:["It is time consuming","It requires a lot of privacy","It allows clients cope with life","It requires a lots of trust"],a:2,e:"Correct answer: It allows clients cope with life."},
+
+{p:"1",s:"CHE 215",q:"One of the following does not militate against the success of Primary Health Care",o:["Lack of commitment","Inadequate funding","Community empowerment","Poor planning and implementation"],a:2,e:"Correct answer: Community empowerment."},
+
+{p:"1",s:"CHE 254",q:"Hallucinogenic means",o:["The ability of a drug to chemically induce symptom of psychosis","The tendency of a drug to produce auditory and visual hallucinations","The exhibition of unwanted drug reaction","The tendency to increase drug dosage"],a:1,e:"Correct answer: The tendency of a drug to produce auditory and visual hallucinations."},
+
+{p:"1",s:"CHE 254",q:"These drugs produce insensitivity to pain ether by their general action or by local action except",o:["Xylocaine","Halothane","Phenergan","Nitrous oxide"],a:0,e:"Correct answer: Xylocaine."},
+
+{p:"1",s:"CHE 254",q:"Antipyretic are",o:["Drugs that reduce temperature when above normal","Drugs that relieve pain without interfering with consciousness","Drugs that relieve depression","Drugs that inhabit the growth of the organism"],a:0,e:"Correct answer: Drugs that reduce temperature when above normal."},
+
+{p:"1",s:"CHE 254",q:"Pre- packing of drugs means",o:["Appropriate use of drugs for clients /patients use","Putting of drugs into envelopes or bottles according to dosage before giving out patients","Keeping drugs in adequate conditions in the store","Ordering more drugs when needed to keep for future use."],a:1,e:"Correct answer: Putting of drugs into envelopes or bottles according to dosage before giving out patients."},
+
+{p:"1",s:"CHE 218",q:"One of the following should not be referred from primary health center to higher level care",o:["Strangulated hernia","Intestinal obstruction","Simple dressing","Postpartum hemorrhage"],a:2,e:"Correct answer: Simple dressing."},
+
+{p:"1",s:"CHE 214",q:"These factors except one affect the nutritional status of a community",o:["Family size in the home","Seasonal variation of the community","Increase dietary intake of pregnant mothers","Natural disaster in the community"],a:2,e:"Correct answer: Increase dietary intake of pregnant mothers."},
+
+{p:"1",s:"CHE 214",q:"Weaning means:",o:["The gradual introduction of a child to semi foods of the family","Breastfeeding with water","Foods that are hygienically prepared","Adequate nutrients provision"],a:0,e:"Correct answer: The gradual introduction of a child to semi foods of the family."},
+
+{p:"1",s:"CHE 214",q:"Malnutrition cannot be caused by one of the following",o:["Poverty","Ignorance","Muscle wasting","Famine"],a:2,e:"Correct answer: Muscle wasting."},
+
+{p:"1",s:"CHE 240",q:"One of the following is not a solid waste in the community",o:["Garbage","Agricultural waste","Industrial waste","Effluent from sewage"],a:3,e:"Correct answer: Effluent from sewage."},
+
+{p:"1",s:"CHE 240",q:"One of the following is not an industrial welfare service",o:["Provision of staff canteen","Personal hygiene","Provision of recreational facilities","Provision of transportation facilities"],a:1,e:"Correct answer: Personal hygiene."},
+
+{p:"1",s:"CHE 218",q:"Pneumoconiosis cannot be prevented by:",o:["Pre-wetting or wet drilling","Using Personal Protective Equipment (ppe)","Good house keeping","Use of exhaust ventilation"],a:2,e:"Correct answer: Good house keeping."},
+
+{p:"1",s:"CHE 233",q:"The following is a psychotic condition",o:["Phobia reaction","Schizophrenia","Hysterical neurosis","Anxiety"],a:1,e:"Correct answer: Schizophrenia."},
+
+{p:"1",s:"CHE 218",q:"The following are characteristics of a manic patient except",o:["Illusion","Depression","Delusion","Suicidal thought"],a:1,e:"Correct answer: Depression."},
+
+{p:"1",s:"CHE 221",q:"The following are the symptoms for stomach and intestinal disorders except",o:["Dyspnea","Mucoid stool","Heart burn","Abdominal pain"],a:0,e:"Correct answer: Dyspnea."},
+
+{p:"1",s:"CHE 226",q:"One of the following is not an emergency condition in the community",o:["Poisoning","Shock","Severe bleeding","Bruises"],a:3,e:"Correct answer: Bruises."},
+
+{p:"1",s:"CHE 262",q:"For referral services to be successful in a health institution, one of the following is important:",o:["Re-orientation of hospital workers and 2 ways referral.","Re-orientation of PHC workers.","Re-orientation of drivers.","Re-orientation of the community."],a:0,e:"Correct answer: Re-orientation of hospital workers and 2 ways referral.."},
+
+{p:"1",s:"CHE 240",q:"Which of the following is not a method of identifying occupational health hazards?",o:["Observation of work environment.","Observation of people at work.","Epidemiological studies.","Pre-employment medical examination."],a:2,e:"Correct answer: Epidemiological studies.."},
+
+{p:"1",s:"CHE 240",q:"Who among these is referred to as father of occupational health?",o:["Hippocrates.","Percival pot.","Bemdino Mazzini.","George argricola."],a:2,e:"Correct answer: Bemdino Mazzini.."},
+
+{p:"1",s:"CHE 211",q:"To support integrated service deliver, the following is necessary:",o:["Advocacy.","Community development committee.","Supplies of essential drugs.","Radical information system."],a:3,e:"Correct answer: Radical information system.."},
+
+{p:"1",s:"CHE 211",q:"Patients conditions not covered by CHEW standing orders should:",o:["Be treated with the assistance of a colleague.","Ask patient to go away.","Be left for observation.","Be referred immediately"],a:3,e:"Correct answer: Be referred immediately."},
+
+{p:"1",s:"CHE 211",q:"One of the objectives of the standing orders is to:",o:["Provide framework for health for all.","Provide systematic change in patients.","Give legal protection to the health worker.","Provide framework for staff promotion."],a:2,e:"Correct answer: Give legal protection to the health worker.."},
+
+{p:"1",s:"CHE 218",q:"The content of job description of the community health extension worker includes the following:",o:["Job title.","Location of job.","Duration of job.","Address of the worker"],a:3,e:"Correct answer: Address of the worker."},
+
+{p:"1",s:"CHE 240",q:"The occupational hazard of people working in a cotton industry is:",o:["Asbestosis.","Bagassosis.","Byssinosis.","Lumbago."],a:2,e:"Correct answer: Byssinosis.."},
+
+{p:"1",s:"CHE 218",q:"Rehabilitation of the physical handicap can best be managed by a:",o:["Doctor.","Nurse.","Physiotherapist.","Surgeon."],a:2,e:"Correct answer: Physiotherapist.."},
+
+{p:"1",s:"CHE 218",q:"PHC/54/0 19/134 represent:",o:["PHC district no. 54. ward no. 19, and house no 134.","PHC district no. 019, ward no. 54 and house no 134.","PHC district no. 54 ward no. 134, and house no 019.","PHC district no. 134, ward no. 19, and house no."],a:0,e:"Correct answer: PHC district no. 54. ward no. 19, and house no 134.."},
+
+{p:"1",s:"CHE 215",q:"Community and social mobilization for primary health care in the community level enhances:",o:["Distribution of resources for health actions.","Intersectoral and inter-departmental collaborations.","Dissemination of simple and relevant information.","Increased level of awareness among community members."],a:3,e:"Correct answer: Increased level of awareness among community members.."},
+
+{p:"1",s:"CHE 213",q:"Advocacy in primary health care means:",o:["Arguing with policy makers.","Condemning the actions of policy makers.","Arousing the interest of policy makers through dialogue.","Using law enforcement agents."],a:2,e:"Correct answer: Arousing the interest of policy makers through dialogue.."},
+
+{p:"1",s:"CHE 262",q:"The path to the PHC referral system is both:",o:["Downward and sideways.","Downwards and upwards.","Downwards only.","Upwards and downwards."],a:3,e:"Correct answer: Upwards and downwards.."},
+
+{p:"1",s:"CHE 233",q:"Positive mental health habits include the following except:",o:["Adequate sleep.","Recreation.","Tricking.","Good social relationship."],a:2,e:"Correct answer: Tricking.."},
+
+{p:"1",s:"CHE 218",q:"The best way to enhance good healthy living for the disabled is all except:",o:["Pity.","Love.","Acceptance of the disabled.","A voidance of over protection"],a:0,e:"Correct answer: Pity.."},
+
+{p:"1",s:"CHE 254",q:"Which of these drugs is used in the treatment of helminthes?",o:["Paracetamol.","Combantrin.","Folic acid.","Choloroquine."],a:1,e:"Correct answer: Combantrin.."},
+
+{p:"1",s:"CHE 218",q:"One of the conditions is not associated with mental problems:",o:["Down's syndrome.","Cerebral palsy.","Hydrocephalus.","Hypoglycaemia."],a:3,e:"Correct answer: Hypoglycaemia.."},
+
+{p:"1",s:"CHE 226",q:"Impacted fracture is:",o:["Bone broken and internal organ is injured.","Bone broken and there is an open wound.","One end of the broken bone is forced into the other end of the bone.","Bone broken with only slight injury to the tissue."],a:2,e:"Correct answer: One end of the broken bone is forced into the other end of the bone.."},
+
+{p:"1",s:"CHE 218",q:"One of the following is the most important action to be performed in an unconscious client:",o:["To prevent clenched teeth.","To obtain urgent medical attention.","To refer at once.","To ensure an open airway."],a:3,e:"Correct answer: To ensure an open airway.."},
+
+{p:"1",s:"CHE 226",q:"The important factor that determines the seriousness of a bum or scald is:",o:["The degree of burns or scale.","The area covered by the injury.","The intensity of the pain.","The pain threshold on the client."],a:1,e:"Correct answer: The area covered by the injury.."},
+
+{p:"1",s:"CHE 218",q:"Male circumcision is:",o:["Removal of the clitoris and labia majora.","Removal of the glands of the penis.","Removal of the prepuce (foreskin) of the penis,","Widening of the urethral orifice."],a:2,e:"Correct answer: Removal of the prepuce (foreskin) of the penis,."},
+
+{p:"1",s:"CHE 254",q:"The following drugs are effective in the treatment of psychiatric patients excepts:",o:["Chlorpromazine.","Diazepam.","Barbiturates.","Salbutamol."],a:3,e:"Correct answer: Salbutamol.."},
+
+{p:"1",s:"CHE 218",q:"The immune system of the body involves one of the following:",o:["Red blood cells.","White blood cells.","Heart rate.","Haemoglobin."],a:1,e:"Correct answer: White blood cells.."},
+
+{p:"1",s:"CHE 214",q:"Energy giving food include the following except:",o:["Yam tuber.","Maize.","Beans.","Sweet potatoes."],a:2,e:"Correct answer: Beans.."},
+
+{p:"1",s:"CHE 214",q:"All but one of the following nutrients essential in a balanced diet:",o:["Carbohydrates.","Nitrates.","Protein.","Fats and oils."],a:1,e:"Correct answer: Nitrates.."},
+
+{p:"1",s:"CHE 214",q:"Food taken in correct proportion functions in one of the following ways:",o:["Prevents body immune system.","Prevents nutritional diseases.","Prevents growth and development.","Prevents growth monitoring."],a:1,e:"Correct answer: Prevents nutritional diseases.."},
+
+{p:"1",s:"CHE 214",q:"The best food for a neonate is:",o:["Milk fat.","Powder milk.","Fresh cow milk.","Breast milk."],a:3,e:"Correct answer: Breast milk.."},
+
+{p:"1",s:"CHE 214",q:"A patient is said to be nutritionally balanced when the HB is:",o:["Below 7 grammes/100ml of blood.","Between 7 - 10 grammes/100ml of blood.","Below 2.5 grammes/100ml of blood.","Between 2.5 - 3 grammes/100mi of blood."],a:1,e:"Correct answer: Between 7 - 10 grammes/100ml of blood.."},
+
+{p:"1",s:"CHE 218",q:"Periodontal diseases are best prevented through the following measures except:",o:["Maintenance of good oral hygiene","Regular and proper use of toothbrush or chewing stick.","Brushing of teeth after every meal and before retiring to bed.","Chewing chocolate at bedtime."],a:3,e:"Correct answer: Chewing chocolate at bedtime.."},
+
+{p:"1",s:"CHE 218",q:"These are characteristics of good water except: It is",o:["Odourless.","Tasteless.","Colourless.","Odourous."],a:3,e:"Correct answer: Odourous.."},
+
+{p:"1",s:"ENT 111",q:"Which of the following environmental factors positively affect the health of the community?",o:["Well-ventilated rooms.","Overgrown weeds around the houses.","Stagnant water.","Indiscriminate defaecation."],a:0,e:"Correct answer: Well-ventilated rooms.."},
+
+{p:"1",s:"CHE 214",q:"The following are local food preservation methods except:",o:["Salting.","Smoking.","Sorting.","Sugaring."],a:2,e:"Correct answer: Sorting.."},
+
+{p:"1",s:"ENT 111",q:"Environmental factors affecting the health of the community include the following except:",o:["Air pollution.","Poor refuse disposal.","Industrial waste disposal.","Level of education."],a:3,e:"Correct answer: Level of education.."},
+
+{p:"1",s:"CHE 218",q:"All are disease causing organisms except:",o:["Scabies.","P. Vivax.","Vibro cholerae.","N. Gonorrhoeae."],a:0,e:"Correct answer: Scabies.."},
+
+{p:"1",s:"CHE 218",q:"A child is in grave danger if:",o:["He is feeding well.","Haemoglobin is above 30%","Child has anaemia.","Child has stiff neck."],a:2,e:"Correct answer: Child has anaemia.."},
+
+{p:"1",s:"CHE 218",q:"Common procedures performed in the PHC laboratory include all but one:",o:["Urinalysis.","Stool examination.","Haemoglobin estimation.","Liver function test."],a:3,e:"Correct answer: Liver function test.."},
+
+{p:"1",s:"CHE 213",q:"All of these but one, are not elements of good communication:",o:["Sender.","Message.","Role-play.","Receiver"],a:2,e:"Correct answer: Role-play.."},
+
+{p:"1",s:"ENT 111",q:"In the WHO definitions of health, three aspects of health identified are:",o:["Physical, mental and social,","Physical, mental and economic.","Physical, mental and cultural.","Physical, mental and environmental"],a:0,e:"Correct answer: Physical, mental and social,."},
+
+{p:"1",s:"CHE 211",q:"To support integrated health service delivery one of the following is necessary:",o:["Advocacy.","Community development committee.","Supplies of essential drugs.","Radical information system."],a:0,e:"Correct answer: Advocacy.."},
+
+{p:"1",s:"CHE 211",q:"Which one of the following constitutes a positive development in the Nigerian health system since 1985?",o:["Making PHC the pivot of National Health Policy.","Preventive care.","Curative care.","Infrastructure."],a:2,e:"Correct answer: Curative care.."},
+
+{p:"1",s:"CHE 218",q:"The three tiers of health care delivery in Nigeria include:",o:["Nursery, primary, secondary.","Primary, secondary, tertiary.","Primary, secondary, university.","Primary, secondary, foundation."],a:1,e:"Correct answer: Primary, secondary, tertiary.."},
+
+{p:"1",s:"CHE 262",q:"Characteristics of tertiary level of care include all but:",o:["Closest to the grass root.","Referral from the secondary level.","Provides very specialized care.","Refers back to secondary level and/or primary level or as the case may be."],a:0,e:"Correct answer: Closest to the grass root.."},
+
+{p:"1",s:"CHE 218",q:"One of the following is not an advantage of team work 10 health care delivery:",o:["Personality differences among members of the team.","Promotes effective health care.","Saves time and makes work easier.","Makes room for specialization."],a:3,e:"Correct answer: Makes room for specialization.."},
+
+{p:"1",s:"CHE 218",q:"The following but one, are true of a health team:",o:["A group of health workers working towards a goal.","A group of health workers working towards realization of personal goals.","A group of health workers working for a common purpose.","A group of health professionals working together to fulfill a common objective"],a:1,e:"Correct answer: A group of health workers working towards realization of personal goals.."},
+
+{p:"1",s:"CHE 213",q:"One of the following is not an aid in communication:",o:["Radio","Story-telling.","Puppet.","Poster."],a:2,e:"Correct answer: Puppet.."},
+
+{p:"1",s:"CHE 213",q:"Factors that promote effective health education include the following except",o:["Building on what people know.","Favourable environment.","Elimination of community participation","Being a good leader"],a:2,e:"Correct answer: Elimination of community participation."},
+
+{p:"1",s:"CHE 213",q:"The aim of health education is:",o:["To train teachers for health services.","To bring about a change in people's attitude","To merge the department of health and","To train health workers."],a:1,e:"Correct answer: To bring about a change in people's attitude."},
+
+{p:"1",s:"CHE 213",q:"Effective communication is facilitated by:",o:["Adequate feedback.","Difference in culture.","Wide gap in educational levels.","Difference in belief."],a:0,e:"Correct answer: Adequate feedback.."},
+
+{p:"1",s:"CHE 213",q:"Barriers to good communication include the following except:",o:["Emotion.","Poor listening.","Effective questioning skills.","Differences in attitudes and perception."],a:0,e:"Correct answer: Emotion.."},
+
+{p:"1",s:"CHE 233",q:"Environmental health is:",o:["The same thing as public health.","Bad when the birth rate is very high.","The control of factors around the human habitat for well-being.","Necessarily influenced by climatic conditions"],a:2,e:"Correct answer: The control of factors around the human habitat for well-being.."},
+
+{p:"1",s:"CHE 218",q:"Reasons for using home-based records include the following except:",o:["Ensuring community involvement in health care.","Reducing time wastage at health facilities.","Allowing continuity of care.","Serves as passport for admission into primary school."],a:3,e:"Correct answer: Serves as passport for admission into primary school.."},
+
+{p:"1",s:"CHE 213",q:"Planning health education activities include the following except:",o:["Time frame for the health education session.","Relevance of the topic","Inadequate knowledge of the subject.","Identifying the learning situation and needs"],a:2,e:"Correct answer: Inadequate knowledge of the subject.."},
+
+{p:"1",s:"CHE 218",q:"Road to health chart is used for children between ages:",o:["I year - 5 years.","0- 10 years.","0 - 12 months.","Birth - 5 years."],a:0,e:"Correct answer: I year - 5 years.."},
+
+{p:"1",s:"CHE 213",q:"The process of transferring knowledge and skills that will bring about positive change towards a healthy living is:",o:["Dialogue","Communication","Health Intervention","Health Education"],a:3,e:"Correct answer: Health Education."},
+
+{p:"1",s:"CHE 211",q:"The second National Development plan has all the following objectives but one:",o:["An unlimited, strong and self reliant-nation","A great and dynamic economy","A limited, strong and self reliant-nation","A free and democratic society"],a:2,e:"Correct answer: A limited, strong and self reliant-nation."},
+
+{p:"1",s:"CHE 218",q:"One of the following is not among the qualities of a good leader:",o:["Levity","Accountability","Motivation","Delegation"],a:0,e:"Correct answer: Levity."},
+
+{p:"1",s:"CHE 211",q:"One of the following is not a member of Local Government Health Development Committee:",o:["Village health worker","Local Government PHC coordinator","Supervisory councillor for health","School of health technology PHC coordinator (where applicable)"],a:3,e:"Correct answer: School of health technology PHC coordinator (where applicable)."},
+
+{p:"1",s:"CHE 254",q:"Tradomedicine does not have one of the following characteristics:",o:["It can be transferred or inherited","Lack of regulation of practice","Specific and accurate drug dosage","Lack of research and documentation"],a:2,e:"Correct answer: Specific and accurate drug dosage."},
+
+{p:"1",s:"CHE 213",q:"One of the following is not a method of community diagnosis:",o:["Observation","Interview","Questionnaires","Sensitization"],a:3,e:"Correct answer: Sensitization."},
+
+{p:"1",s:"CHE 211",q:"One of this is not a function of the primary tier of the Nigeria Health System:",o:["Managing PHC facilities","Supervises environmental sanitation","Formulations of national health policy","Mobilizes communities for PHC services at the grass root level"],a:2,e:"Correct answer: Formulations of national health policy."},
+
+{p:"1",s:"GNP 123",q:"One of the following is professional ethics required of a community health practitioner:",o:["Liability","Privacy","Anarchy","Disclosure"],a:1,e:"Correct answer: Privacy."},
+
+{p:"1",s:"CHE 218",q:"One of the following is not a stumbling block to health service delivery in Nigeria:",o:["Ill management of the health system","Efficient utilization of available health services","Ineffective health planning","Shortfall of health-care providers"],a:1,e:"Correct answer: Efficient utilization of available health services."},
+
+{p:"1",s:"CHE 218",q:"One of the following is not a problem of relationship among health workers:",o:["Lack of group co-operation","Fear of failure","Provision of medium for exchange of ideas","Lack of support for other colleaguesCHEW Solutions CHEW Solutions"],a:2,e:"Correct answer: Provision of medium for exchange of ideas."},
+
+{p:"1",s:"CHE 213",q:"Components of health promotion exclude:",o:["Intolerance of health personnel","Service improvement","Health education","Advocacy"],a:0,e:"Correct answer: Intolerance of health personnel."},
+
+{p:"1",s:"CHE 213",q:"Objectives of health communication exclude:",o:["To undermine the acceptance of health services","Ensure and sustain full utilization of PHC services provided in the community","Equitable distribution of health services","To promote high level of individualism among policy makers"],a:3,e:"Correct answer: To promote high level of individualism among policy makers."},
+
+{p:"1",s:"CHE 213",q:"Methods of health communication exclude:",o:["Visual communication","Non-verbal communication","Overhead projector communication","Verbal communication"],a:2,e:"Correct answer: Overhead projector communication."},
+
+{p:"1",s:"CHE 218",q:"One of the following is not a role in community mobilization:",o:["Encourage use of available resources","Plan solution to identified problem","Encourage political rivalry","Identifying own needs and problems"],a:2,e:"Correct answer: Encourage political rivalry."},
+
+{p:"1",s:"CHE 211",q:"All are terms of references of Village Development Committee except:",o:["Plan for the health and welfares of the community","Selection of village health workers","Establishment of village health post","Establishment of PHC centre"],a:3,e:"Correct answer: Establishment of PHC centre."},
+
+{p:"1",s:"CHE 211",q:"The linkage between the various tiers of the Nigeria Health System does not include:",o:["There is two-way referral system among them","The federal government makes policies that guide them all","They operate separately and independently","Policies and planning depend on data from all their tiers"],a:2,e:"Correct answer: They operate separately and independently."},
+
+{p:"1",s:"CHE 213",q:"One of the following is correct about visual communication aids:",o:["Graph","Discussion","Gossip","Voice note"],a:0,e:"Correct answer: Graph."},
+
+{p:"1",s:"CHE 213",q:"The act of enabling people to increase control over their health and its determinants thereby improving their health is:",o:["Health promotion","Community sensitization","Advocacy","Community mobilization"],a:0,e:"Correct answer: Health promotion."},
+
+{p:"1",s:"CHE 218",q:"One of the following is not an information to be sought out during community diagnosis:",o:["Socio-economic information","Outreach information","Epidemiological information","Demographic information"],a:1,e:"Correct answer: Outreach information."},
+
+{p:"1",s:"CHE 218",q:"In community health practice, the patient/client has the right to:",o:["Reveals information to others","Make decision regarding other people's condition","Unconditional acceptance as human being","Access records for others"],a:2,e:"Correct answer: Unconditional acceptance as human being."},
+
+{p:"1",s:"CHE 215",q:"The acronyms PHCUOR means:",o:["Primary Health Care Under One Roof","Primary Health Care Under One Root","Public Health Care Under One Roof","Permanent Health Care Under One Roof"],a:0,e:"Correct answer: Primary Health Care Under One Roof."},
+
+{p:"1",s:"CHE 218",q:"One of the following is not among the basic component of community:",o:["Chemical","Physical","Cohesion","Social"],a:0,e:"Correct answer: Chemical."},
+
+{p:"1",s:"CHE 218",q:"Elements of PHC includes:",o:["Equitable distribution of health care services","Disease Epidemiology","Locally endemic, epidemic and pandemic disease prevention and control","Active community involvement in health planning and programme implementation"],a:0,e:"Correct answer: Equitable distribution of health care services."},
+
+{p:"1",s:"CHE 211",q:"The Act that establishes the CHPRBN is:",o:["Act Lfn (cap 28) 2004","Act Lfn (cap 20) 2010","Act Lfn (cap 19) 2005","Act Lfn (cap 19) 2004"],a:3,e:"Correct answer: Act Lfn (cap 19) 2004."},
+
+{p:"1",s:"CHE 213",q:"Characteristics of a typical health team include:",o:["Discord among team members","Irregular meeting of member","Availability of working procedure that is understood and agreed upon","Unclear line of communication"],a:2,e:"Correct answer: Availability of working procedure that is understood and agreed upon."},
+
+{p:"1",s:"CHE 214",q:"Cultural factors detrimental to health does not include:",o:["Prolong breastfeeding","Spousal inheritance","Female genital mutilation","Food taboo"],a:0,e:"Correct answer: Prolong breastfeeding."},
+
+{p:"1",s:"CHE 218",q:"The process of finding out the actual health status of a given community is:",o:["Advocacy","Community Mobilization","Community Diagnosis","Situation Analysis"],a:3,e:"Correct answer: Situation Analysis."},
+
+{p:"1",s:"CHE 218",q:"The needs perceived by the community members themselves is called:",o:["wants","Felt needs","Identified needs","Real needs"],a:1,e:"Correct answer: Felt needs."},
+
+{p:"1",s:"CHE 218",q:"A leader who makes decision without input from others, exercising complete control over the team or organization is called:",o:["Motivator Leader","Democratic Leader","Laissez Fair Leader","Autocratic Leader"],a:3,e:"Correct answer: Autocratic Leader."},
+
+{p:"1",s:"CHE 233",q:"One of the following is not a behaviour expected of a community health practitioner towards his employer:",o:["Maintain good working relationship","Must be punctual and dedicated to his duty","Must be honest while carrying out his daily duty","Investigating to know the limitation of employer"],a:3,e:"Correct answer: Investigating to know the limitation of employer."},
+
+{p:"1",s:"CHE 213",q:"The response or reaction provided by the receiver to the sender is called:",o:["Channel","Feedback","Message","Decoder"],a:1,e:"Correct answer: Feedback."},
+
+{p:"1",s:"CHE 233",q:"The dimension of health which sees health as a psychological state in which the individual feels a sense of perfect wellbeing and have control over his environment is termed:",o:["Mental Health","Physical Health","Social Health","Emotional Health"],a:0,e:"Correct answer: Mental Health."},
+
+{p:"1",s:"CHE 218",q:"One of the following is an instrument used during community diagnosis:",o:["Two ways referral form","Patient register","Guidelines for writing report","Marking Toch sheet"],a:2,e:"Correct answer: Guidelines for writing report."},
+
+{p:"1",s:"CHE 218",q:"The type of liability where the plaintiff can bring a separate action against one defendant without joining the other liable parties is called:",o:["Several liability","Strict liability","Civil liability","Criminal liability"],a:0,e:"Correct answer: Several liability."},
+
+{p:"1",s:"CHE 218",q:"One of the following is not an instrument used in situation analysis:",o:["Form A","Form C","Form F","Form H"],a:3,e:"Correct answer: Form H."},
+
+{p:"1",s:"GNP 123",q:"All except one is importance of community health professional ethics:",o:["To compete among health professional","Simply being of morale character","To help resolve dispute between patients, family and health worker","To guide us to tell the truth, keep our promises or help someone in need"],a:0,e:"Correct answer: To compete among health professional."},
+
+{p:"1",s:"CHE 218",q:"One of the following best defines essential medicines in the current context:",o:["Those medicines that satisfy the health care needs of the of the population","Those medicines that satisfy the health care needs of the minority of the population","Those medicines that satisfy the health care needs of the majority of the population","Those medicines that satisfy the priority health care needs of the population"],a:3,e:"Correct answer: Those medicines that satisfy the priority health care needs of the population."},
+
+{p:"1",s:"CHE 218",q:"One of the following is not among the principles of autonomy:",o:["Inform consent from the patient","Justice","Privacy","Refusal to treatment"],a:1,e:"Correct answer: Justice."},
+
+{p:"1",s:"CHE 211",q:"Custodians of customs and tradition to provide traditional guidelines to their respective communities is one of the duties of:",o:["Traditional Leader","Household leader","Voluntary Village Committee","Modern Leader"],a:0,e:"Correct answer: Traditional Leader."},
+
+{p:"1",s:"CHE 218",q:"One of the following is not a composition of the health team:",o:["Community Leader","Health Attendants","Driver","CHEWs"],a:0,e:"Correct answer: Community Leader."},
+
+{p:"1",s:"CHE 211",q:"The group of people living together within a specified geographical boundary is called:",o:["Committee","Sample","Community","Cluster"],a:2,e:"Correct answer: Community."},
+
+{p:"1",s:"CHE 218",q:"The right of the clients excludes one of the following:",o:["Respect and dignity","Sound policy formulation","Right to consideration, privacy on treatment","Confidentiality"],a:1,e:"Correct answer: Sound policy formulation."},
+
+{p:"1",s:"CHE 233",q:"One of the following cultural and traditional practices that favourably influence the health behaviour of the community members is:",o:["Early marriage","Force feeding","Prolong breast feeding","Hot bath"],a:2,e:"Correct answer: Prolong breast feeding."},
+
+{p:"1",s:"CHE 215",q:"The Alma-Ata declaration on Primary Health Care was officially adopted on:",o:["14th September, 1978","14th September, 1976","12th September, 1987","12th September, 1978"],a:3,e:"Correct answer: 12th September, 1978."},
+
+{p:"1",s:"CHE 218",q:"One of the following is not an information to be sought out during situation analysis:",o:["Functioning health facilities","Topography of the area","Educational facilities by types","Health personnel by types"],a:3,e:"Correct answer: Health personnel by types."},
+
+{p:"1",s:"CHE 218",q:"A community health practitioner is said to be registered when:",o:["Write National Examination","Sat for National exams and filled the licence form","Passed National Examination and possess licence to practice","Attend school of health technology"],a:2,e:"Correct answer: Passed National Examination and possess licence to practice."},
+
+{p:"1",s:"CHE 213",q:"One of the following is not a focus group for advocacy:",o:["Supervisory councillor for health","Council secretary","Lga chairman","Women leader"],a:3,e:"Correct answer: Women leader."},
+
+{p:"1",s:"CHE 218",q:"Those things that are forbidden and can either make or mar the health of individuals or the communities is termed as:",o:["Beliefs","Taboo","Custom","Traditions"],a:1,e:"Correct answer: Taboo."},
+
+{p:"1",s:"ENT 111",q:"Health does not exist in isolation, and it is influenced by all but one of the following factors:",o:["Cultural Factors","Socio-economic Factor","Environmental Factors","Political Instability Factor"],a:3,e:"Correct answer: Political Instability Factor."},
+
+{p:"1",s:"CHE 218",q:"The principles of justice include one of the following:",o:["Fairness in allocation of health resources","Avoidance of lateness","Mode of dressing","Prompt attention"],a:0,e:"Correct answer: Fairness in allocation of health resources."},
+
+{p:"1",s:"CHE 233",q:"A group of people who share common interest, values, common historical background and accept certain form of behaviour for all members is referred to as:",o:["Ethnic group","Kinship","Community","Religion group"],a:2,e:"Correct answer: Community."},
+
+{p:"1",s:"CHE 215",q:"The rationales of community mobilization include:",o:["Community participation","Community mobilization","Identification of political groups","Community diagnosis"],a:0,e:"Correct answer: Community participation."},
+
+{p:"1",s:"CHE 233",q:"One of the following cultural factors influence health behaviour:",o:["Poor Working Condition","Unemployment","Customs","Poverty"],a:2,e:"Correct answer: Customs."},
+
+{p:"1",s:"CHE 211",q:"The First National Development plan started in year … to …",o:["1965 – 1969","1966 – 1980","1963 – 1967","1962 – 1968"],a:3,e:"Correct answer: 1962 – 1968."},
+
+{p:"1",s:"CHE 218",q:"The process of engaging and empowering community members to take collective actions to address local issues is known as:",o:["Community Mobilization","Situation Analysis","Advocacy","Community Diagnosis"],a:0,e:"Correct answer: Community Mobilization."},
+
+{p:"1",s:"CHE 215",q:"PHC approach that ensures systematic evaluation of care based on predetermined standard and correction of deficiencies is:",o:["Down-up Approach","Cost Recovery","Quality Assurance","Emphasis on Preventive"],a:2,e:"Correct answer: Quality Assurance."},
+
+{p:"1",s:"CHE 213",q:"The transmission of scientific health knowledge, information, facts and ideas to individuals, group and communities is:",o:["Health promotion","Advocacy","Community engagement","Health communication"],a:3,e:"Correct answer: Health communication."},
+
+{p:"1",s:"CHE 218",q:"The type of negligence in which person complaining of the act of negligence played a part in causing the injuries is:",o:["Individual negligence","Personal negligence","Group negligence","Contributory negligence"],a:3,e:"Correct answer: Contributory negligence."},
+
+{p:"1",s:"CHE 213",q:"One of the following is not a step in community mobilization:",o:["Make a map for the community","Identifying the community leaders","Arrange for meeting","Communicate intention"],a:3,e:"Correct answer: Communicate intention."},
+
+{p:"1",s:"CHE 213",q:"A combination of one or more channel in communication of health information is:",o:["Digital communication","Multi mix communication","Audio-visual communication","Interpersonal communication"],a:1,e:"Correct answer: Multi mix communication."},
+
+{p:"1",s:"CHE 218",q:"The rationales for situation analysis does not include:",o:["Identification of available infrastructures","Identification of socio-economic groups","Provides information on health facilities and services","To form a baseline for health planning"],a:3,e:"Correct answer: To form a baseline for health planning."},
+
+{p:"1",s:"CHE 213",q:"One of the following is among the steps involved in advocacy:",o:["Identifying health institutions","Identifying the desired outcome","Identifying health problems","Identifying the task of policy makers"],a:1,e:"Correct answer: Identifying the desired outcome."},
+
+{p:"1",s:"CHE 218",q:"Which of the following is not a fundamental element of a profession:",o:["Abstract knowledge used","Responsibility in a work task","Value orientation into service","Autonomy in decision making"],a:3,e:"Correct answer: Autonomy in decision making."},
+
+{p:"1",s:"GNP 123",q:"Which of the following is the opposite of normative ethics:",o:["Virtue ethics","Beta ethics","Meta ethics","Micro ethics"],a:2,e:"Correct answer: Meta ethics."},
+
+{p:"1",s:"CHE 213",q:"One of these is a major barrier to an effective communication in the community:",o:["Language barrier","Scientific and empirical fact","Active listening","Adaptability"],a:0,e:"Correct answer: Language barrier."},
+
+{p:"1",s:"CHE 213",q:"The process of health communication exclude:",o:["Emergency response","Identifying the audience","Choosing channel","Setting objectives"],a:0,e:"Correct answer: Emergency response."},
+
+{p:"1",s:"CHE 218",q:"The features of community exclude:",o:["Always homogenous","Many sub-groups","Presence of a leader","May be small or big settlement"],a:0,e:"Correct answer: Always homogenous."},
+
+{p:"1",s:"CHE 218",q:"PHCUOR was necessitated and introduced as a result of:",o:["Inconvenience patients and clients","Offers limited range of services","Demoralises health workers","Fragmentation in the delivery of PHC services"],a:3,e:"Correct answer: Fragmentation in the delivery of PHC services."},
+
+{p:"1",s:"CHE 218",q:"Members that share the same culture, views and religion living in the same geographical location is called:",o:["Endogenous","Exogenous","Heterogenous","Homogenous"],a:3,e:"Correct answer: Homogenous."},
+
+{p:"1",s:"CHE 218",q:"One of the following is not among the roles of Community Diagnosis:",o:["Identification of health and health related needs","Foster self reliance","Provides basis for making plans","Provides base line for evaluation and intervention"],a:3,e:"Correct answer: Provides base line for evaluation and intervention."},
+
+{p:"1",s:"CHE 215",q:"The principle of PHC characterised by fair and just distribution of health resources is:",o:["Equity","Equality","Community Participation and Involvement","Intersectoral Collaboration"],a:0,e:"Correct answer: Equity."},
+
+{p:"1",s:"CHE 218",q:"The act of expressing in words and actions, the trust given by a client/patient is called:",o:["Confidence","Understanding","Honesty","Secretive"],a:0,e:"Correct answer: Confidence."},
+
+{p:"1",s:"CHE 213",q:"A system that guides and controls moral behaviour and manifests in the character and mind is:",o:["Code of profession","Ethics","Professional ethics etiquette","Etiquette"],a:2,e:"Correct answer: Professional ethics etiquette."},
+
+{p:"1",s:"GNP 123",q:"The basic ethical principle of beneficence states that:",o:["Our actions must be fair to everyone","All our thoughts and actions must be directed to ensure that others benefit from them","We should not impose our views on others","Our actions must result in the least harm to others"],a:1,e:"Correct answer: All our thoughts and actions must be directed to ensure that others benefit from them."},
+
+{p:"1",s:"CHE 218",q:"The global organisation saddled with responsibility of formulating policy for effective health care delivery:",o:["WHO","UN","Gavi","Ukaid"],a:0,e:"Correct answer: WHO."},
+
+{p:"1",s:"CHE 213",q:"A sender must have the following skills except:",o:["Mastery of contents not applicable","Must know his/her channel of communication","Must be knowledgeable of its contents","Objective must be clearly defined"],a:0,e:"Correct answer: Mastery of contents not applicable."},
+
+{p:"1",s:"CHE 213",q:"Advocacy is best defined as:",o:["Process of creating awareness among health workers","Process of creating awareness among community members","Process of finding problems in the community","Process of creating awareness among policy makers for support"],a:3,e:"Correct answer: Process of creating awareness among policy makers for support."},
+
+{p:"1",s:"CHE 218",q:"One of the following is not among styles of leadership:",o:["Vested leadership style","Persuasive style of leadership","Autocratic style of leadership","Democratic leadership style"],a:0,e:"Correct answer: Vested leadership style."},
+
+{p:"1",s:"CHE 262",q:"One of the following is expectation of clients/patients from community health practitioners:",o:["Access to validity of licence of community health practitioner","Smooth referral when needed","Options of various methods of care","Access to quality health care"],a:3,e:"Correct answer: Access to quality health care."},
+
+{p:"1",s:"CHE 211",q:"According to community health practice, a community health practitioner:",o:["Must not use his/her standing order","Must work voluntarily in the community","Must always bear in mind the obligation of preserving human life","Must use his/her curriculum"],a:2,e:"Correct answer: Must always bear in mind the obligation of preserving human life."},
+
+{p:"1",s:"CHE 218",q:"One of the following is not a challenge facing effective delivery of PHC in Nigeria:",o:["Poor attitudinal dispositions among health workers","Poor funding and budgetary allocation","Capacity building for health workforce","Lack of political will"],a:2,e:"Correct answer: Capacity building for health workforce."},
+
+{p:"1",s:"CHE 211",q:"A group of people appointed for implementation of PHC services in the community is known as:",o:["Health Group","Health Workforce","Health Committee","Health Team"],a:3,e:"Correct answer: Health Team."},
+
+{p:"1",s:"CHE 213",q:"S.B.C.C stands for:",o:["Social Behaviour Change Communication","Social Behavioural Charge Communication","Sexual Behavioural Change Communication","Science Behaviour Change Communication"],a:0,e:"Correct answer: Social Behaviour Change Communication."},
+
+{p:"1",s:"CHE 213",q:"The conventional code of conduct in a given professional group is:",o:["Autonomy","Principles of fidelity","Etiquette","Principles"],a:2,e:"Correct answer: Etiquette."},
+
+{p:"1",s:"CHE 213",q:"Effective disposition towards a person, an object or an idea and represents a way of life is called:",o:["Ethics","Moral","Values","Etiquette"],a:2,e:"Correct answer: Values."},
+
+{p:"1",s:"CHE 218",q:"One of the following is a step in community diagnosis:",o:["Monitor drugs revolving fund at ward level","List the cultural practices affecting health","Acquaint self with cultural protocols","Attend the meeting"],a:1,e:"Correct answer: List the cultural practices affecting health."},
+
+{p:"1",s:"CHE 214",q:"Actions often taken by individuals in the community to get well are all except one:",o:["Physical inactivity","Self-Medication","Hydration and Nutrition","Rest and relaxation"],a:0,e:"Correct answer: Physical inactivity."},
+
+{p:"1",s:"CHE 218",q:"One of the following is not a problem identified by health workers during a community diagnosis:",o:["Lack of PHC facilities","Cultural practices affecting health","Poor personal hygiene","Poor waste disposal"],a:3,e:"Correct answer: Poor waste disposal."},
+
+{p:"1",s:"CHE 215",q:"The process of finding out the health needs of the community is referred to as:",o:["Community Mobilization","Community Diagnosis","Community Participation","Community Development"],a:1,e:"Correct answer: Community Diagnosis."},
+
+{p:"1",s:"CHE 213",q:"The process of questioning in order to find out the views or opinion of people is called:",o:["Observation","Interview","Interrogation","History taken"],a:1,e:"Correct answer: Interview."},
+
+{p:"1",s:"CHE 218",q:"A non-registered community health practitioner can work in:",o:["Health facility and home","Community and health facility","Community, health facility and Lga","Neither work in the facility nor in the community"],a:3,e:"Correct answer: Neither work in the facility nor in the community."},
+
+{p:"1",s:"CHE 215",q:"One of the following is not among the principles of health promotion:",o:["Intersectoral collaboration","Focus on determinants","Community participation and engagement","Conflict management"],a:3,e:"Correct answer: Conflict management."},
+
+{p:"1",s:"CHE 213",q:"The medium through which message is transmitted is:",o:["Feedback","Sender","Encoder","Channel"],a:3,e:"Correct answer: Channel."},
+
+{p:"1",s:"CHE 218",q:"Duties of a community health practitioner exclude:",o:["Evaluating and conducting research","Be warm and attentive","Adopting community health services","Training others"],a:2,e:"Correct answer: Adopting community health services."},
+
+{p:"1",s:"CHE 215",q:"The means of encouraging and arousing the interest of people in the community is:",o:["Community diagnosis","Community mobilization","Community involvement","Community participation"],a:1,e:"Correct answer: Community mobilization."},
+
+{p:"1",s:"CHE 211",q:"Roles of PHC in the Nigeria Health System does not encompass:",o:["Act as a catalyst in the socio-economic development of the country","Provision of basic health care services","Enforcement of international health regulation and health collaboration","Provision of preventive, curative, rehabilitative and promotive health care services"],a:2,e:"Correct answer: Enforcement of international health regulation and health collaboration."},
+
+{p:"1",s:"CHE 213",q:"One of the following is not a step in situation analysis:",o:["Obtain the instruments","Identification of leaders","Training of interviewers","Writing report"],a:3,e:"Correct answer: Writing report."},
+
+{p:"1",s:"CHE 233",q:"When a person's confidence is placed in some person or things is often called:",o:["Belief","Ethics","Attitude","Behaviour"],a:0,e:"Correct answer: Belief."},
+
+{p:"1",s:"CHE 213",q:"One of the following is the reason for advocacy:",o:["To identify the roles of community health workers in the community","To identify the roles and responsibilities of community members","To acquaint policy makers on their roles and responsibilities","To provides realistic information necessary to the community"],a:3,e:"Correct answer: To provides realistic information necessary to the community."},
+
+{p:"2",s:"CHE 225",q:"The epithelia tissue is categorically specified into",o:["Simple","Simple squamous","Stratified","Simple And Stratified"],a:3,e:"Correct answer: Simple And Stratified."},
+
+{p:"2",s:"CHE 225",q:"The maintenance of constant interval environment of the human body is called;",o:["Haemostasis","Endocytosis","Haemoptysis","Homeostasis"],a:3,e:"Correct answer: Homeostasis."},
+
+{p:"2",s:"CHE 224",q:"The objectives of immunization in PHC does not include one of the following;",o:["To ensure adequate supply of drugs and equipment","To prevents, control and eradicate disease","To reduce morbidity and mortality caused by preventable disease","To decrease the probability of infection in the infected and susceptible individual"],a:0,e:"Correct answer: To ensure adequate supply of drugs and equipment."},
+
+{p:"2",s:"CHE 225",q:"The muscular tissue that divides the thoracic cavity from the abdominal cavity is called;",o:["Deltoid muscle","Diaphragm muscles","Intercostal muscles","Cardiac spinter muscles"],a:1,e:"Correct answer: Diaphragm muscles."},
+
+{p:"2",s:"CHE 225",q:"One of the precautions applied during measurement of blood pressure is:",o:["Elevate the client’s arm on a pillow","BP instrument kept above","Record eye level measurement","Patient should be in supine position"],a:2,e:"Correct answer: Record eye level measurement."},
+
+{p:"2",s:"CHE 225",q:"One of the following is not among the factors that affects body’s ability to resist infection and abnormal growth;",o:["Hereditary factor","Auto immune disease","Social factor","Nutritional status"],a:2,e:"Correct answer: Social factor."},
+
+{p:"2",s:"CHE 225",q:"In the human cells, the organelle that is responsible for building of protein is known as;",o:["Ribosomes","Cytoplasm","Mitochondria","Lysosomes"],a:0,e:"Correct answer: Ribosomes."},
+
+{p:"2",s:"CHE 225",q:"The major cavities in the body does not include one of the following;",o:["Abdominal cavity","Pelvic cavity","Cranial cavity","Orbital cavity"],a:3,e:"Correct answer: Orbital cavity."},
+
+{p:"2",s:"CHE 261",q:"Sustainability of referral system is based on one of the followings;",o:["Increasing wages of health personnel","Orientation of health care provider","Monitoring and lack of supervision of the activities by the M&e officers","Making the referral forms unavailable at all time"],a:1,e:"Correct answer: Orientation of health care provider."},
+
+{p:"2",s:"CHE 225",q:"the classification of leucocytes that are capable of engulfing and destructing of foreign bodies are the;",o:["Acidophils and basophil","Monocytes and lymphocytes","Neutrophils and lymphocytes","Macrophages and neutrophils"],a:3,e:"Correct answer: Macrophages and neutrophils."},
+
+{p:"2",s:"CHE 225",q:"The physiological variables to be maintained in the human body does not includes one of the following;",o:["Body temperature","Glucose level in the blood","PH of fluids","Humidity"],a:3,e:"Correct answer: Humidity."},
+
+{p:"2",s:"CHE 225",q:"When protective antibodies are produced in the body of the mother and passed to the baby, the baby is said to acquire;",o:["Passive natural immunity","Passive artificial immunity","Active artificial immunity","Active natural immunity"],a:0,e:"Correct answer: Passive natural immunity."},
+
+{p:"2",s:"CHE 225",q:"the biological catalyst that accelerates bio-chemical reaction during food digestion and remain unchanged at the end of the process is called;",o:["Catalyst","Enzymes","Hormones","Buffer"],a:1,e:"Correct answer: Enzymes."},
+
+{p:"2",s:"CHE 225",q:"Which of the following is the primary causes of medication errors in health care settings;",o:["Over use of medical equipment","Frequent patient’s check-ups","Lack of adequate training","Increased the electronic health records"],a:2,e:"Correct answer: Lack of adequate training."},
+
+{p:"2",s:"CHE 225",q:"Central cyanosis is seen in;",o:["Hands","Tongue","Neck","Nose"],a:1,e:"Correct answer: Tongue."},
+
+{p:"2",s:"CHE 225",q:"The part of brain that regulate body temperature is;",o:["Hypothermia","Heat and cold","Skin","The spine"],a:0,e:"Correct answer: Hypothermia."},
+
+{p:"2",s:"CHE 225",q:"When the body lack specific immune reactivity against particular antigen and retaining normal reactivity against another immunogen is refer to as;",o:["Autoimmunity","Immunodeficiency","Immunity","Immunotolerance"],a:3,e:"Correct answer: Immunotolerance."},
+
+{p:"2",s:"CHE 225",q:"One of the following is not a rational for studying anatomy and physiology;",o:["To have enough knowledge require to deliver good health care services in the community","Have a good idea of what one is looking for during physical examination","Is necessary to know the normal structures and functions of the human body","Anatomy gives an insight on how to identify the common health problems in the community"],a:3,e:"Correct answer: Anatomy gives an insight on how to identify the common health problems in the community."},
+
+{p:"2",s:"CHE 225",q:"The leucocytes that are capable to recognize selectively immunogenic substances are the;",o:["Basophils","Neutrophils","Eosinophils","Lymphocytes"],a:3,e:"Correct answer: Lymphocytes."},
+
+{p:"2",s:"CHE 225",q:"A breaking down of molecules into smaller ones is;",o:["Anabolism","Catabolism","Metabolism","Diffusion"],a:1,e:"Correct answer: Catabolism."},
+
+{p:"2",s:"CHE 225",q:"The cell theory as formulated by Robert hook and theodor does not include one of the following;",o:["The cell is the unit functions of all living cells","All cells come from previously existing cells","Is fundamental unit of life which cannot exist independently","Is the unit of life structure of all living things"],a:2,e:"Correct answer: Is fundamental unit of life which cannot exist independently."},
+
+{p:"2",s:"CHE 225",q:"A unicellular living organism capable of independence existence is refers to as;",o:["Cell membrane","Tissue","Cell","Muscle"],a:2,e:"Correct answer: Cell."},
+
+{p:"2",s:"CHE 225",q:"One of the following is a cause for changes in respiratory system;",o:["Ketoacidosis","Cancer","Aids","Ketoalkalosis"],a:1,e:"Correct answer: Cancer."},
+
+{p:"2",s:"CHE 225",q:"The transportation of large particles across a cell membrane is called;",o:["Passive transport","Bulk transport","Osmosis transport","Active transport"],a:1,e:"Correct answer: Bulk transport."},
+
+{p:"2",s:"CHE 225",q:"Contraction of a ventricular chamber is called;",o:["Pulse","Diastolic","Cardiac output","Systolic"],a:3,e:"Correct answer: Systolic."},
+
+{p:"2",s:"CHE 246",q:"The first edition of standing order was developed by a head of family health programme known as;",o:["Dr Eric Nwaze","Professor Salisu Abubakar","Professor Olukoye Ransome Kuti","Dr U.g Abdulkadir"],a:2,e:"Correct answer: Professor Olukoye Ransome Kuti."},
+
+{p:"2",s:"CHE 225",q:"Drugs are administered to a patient considering one of the following",o:["Height","Appearance","Body weight","Calmness"],a:2,e:"Correct answer: Body weight."},
+
+{p:"2",s:"CHE 225",q:"The type of leucocytes that are also called macrophages is;",o:["Lymphocytes","Monocytes","Eosinophils","Neutrophase"],a:1,e:"Correct answer: Monocytes."},
+
+{p:"2",s:"CHE 231",q:"A woman of childbearing age on oral contraceptives complains of scanty menstrual bleeding and brownish discharge, on examination there is no sign of pregnancy, as a CHEW how do you categorized this case;",o:["Moderate-severe condition","Reassurance condition","Moderate condition","Counselling and guidance condition"],a:1,e:"Correct answer: Reassurance condition."},
+
+{p:"2",s:"CHE 246",q:"Which of this is not included in the objectives of standing orders;",o:["To maintain low and uniform standard of health care","To provide framework for history taking, complaint and performing examination","To make health workers treat less common and easily forgotten condition","To give health workers legal protection in their primary health care assignment"],a:2,e:"Correct answer: To make health workers treat less common and easily forgotten condition."},
+
+{p:"2",s:"CHE 225",q:"When a patient is asked to take a drug at “nocte” what does it implies;",o:["At night","Empty stomach","Before breakfast","In the morning"],a:0,e:"Correct answer: At night."},
+
+{p:"2",s:"CHE 225",q:"The group of cells molecules and organs that act together to defend the body against foreign invaders that may cause disease is called;",o:["Immunization","Immunity","Immune system","Antigen-antibody reaction"],a:2,e:"Correct answer: Immune system."},
+
+{p:"2",s:"CHE 246",q:"The word review as used by the standing orders means;",o:["Assessing and evaluating a medical condition of the patient","Patient needs to run an additional laboratory","Patient needs to come for another treatment","Patient needs to refer to higher facility"],a:0,e:"Correct answer: Assessing and evaluating a medical condition of the patient."},
+
+{p:"2",s:"CHE 225",q:"One of the following is a factor influencing respiratory rate;",o:["Kyphosis","Acute pain","Tone","Scoliosis"],a:1,e:"Correct answer: Acute pain."},
+
+{p:"2",s:"CHE 225",q:"A sudden onset of symptoms or illness that has a short duration and often severe is called;",o:["Severe condition","Acute condition","Moderate condition","Mild condition"],a:1,e:"Correct answer: Acute condition."},
+
+{p:"2",s:"CHE 225",q:"One of the following is not among the contents of abdominal cavity",o:["The spleen","The urinary bladder","The gallbladder","The pancrease"],a:1,e:"Correct answer: The urinary bladder."},
+
+{p:"2",s:"CHE 225",q:"A process of gathering information about a patient/clients personal medical and social background by the health worker for appropriate diagnosis is known as;",o:["Physical examination","History taken","Interview","Interrogation"],a:1,e:"Correct answer: History taken."},
+
+{p:"2",s:"CHE 225",q:"Which of the following is not a contra-indication in taking rectal temperature;",o:["Lubrication of the rectum","Rectal prolapsed operation","Diarrhoea","Haemorrhoid"],a:0,e:"Correct answer: Lubrication of the rectum."},
+
+{p:"2",s:"CHE 225",q:"The process of rendering equipment’s and substances free from foreign body is referred to as;",o:["Sanitary","Disinfestation","Sterilization","Disinfection"],a:2,e:"Correct answer: Sterilization."},
+
+{p:"2",s:"CHE 225",q:"One of the following is not among branch of anatomy;",o:["Genetics anatomy","Genetics anatomy","Microscopic anatomy","Ergonomic anatomy"],a:3,e:"Correct answer: Ergonomic anatomy."},
+
+{p:"2",s:"CHE 225",q:"Which of this is not among the route of drug administration;",o:["Subcutaneous route","Intra tarsal route","Intradermal route","Oral route"],a:1,e:"Correct answer: Intra tarsal route."},
+
+{p:"2",s:"CHE 225",q:"The homeostatic control mechanism is classified as;",o:["Positive and active mechanism","Active and passive mechanism","Active and latent mechanism","Positive and negative mechanism"],a:0,e:"Correct answer: Positive and active mechanism."},
+
+{p:"2",s:"CHE 225",q:"A patient has a prescription of amoxycillin dispersible tablet, ½ tab is 250mg qds x 5days. How many tablets does the patient need;",o:["10 tablets","15 tablets","6 tablets","12 tablets"],a:0,e:"Correct answer: 10 tablets."},
+
+{p:"2",s:"CHE 225",q:"One of the following is not type of muscle tissue;",o:["Cardiac muscles","Smooth muscles","Striated muscles","Ciliated muscles"],a:3,e:"Correct answer: Ciliated muscles."},
+
+{p:"2",s:"CHE 225",q:"One of the following is not an autoimmune disease;",o:["Haemolytic anemia","Rheumatoid arthritis","Diabetes mellitus type 1","Obstructed jaundice"],a:3,e:"Correct answer: Obstructed jaundice."},
+
+{p:"2",s:"CHE 225",q:"The most serious implication of human immunodeficiency virus is;",o:["Immunoglobulin","Immunoresponse","Immunosuppression","Immunotolerance"],a:2,e:"Correct answer: Immunosuppression."},
+
+{p:"2",s:"CHE 225",q:"All the following statement are correct about the endocrine glands except one;",o:["They all have a common secretion called hormone","They all produce and secrete enzymes","They pour their secretion directly into the blood","They do not possess ducts"],a:1,e:"Correct answer: They all produce and secrete enzymes."},
+
+{p:"2",s:"CHE 225",q:"If a patient’s respiratory rate is 10 breaths per minute, then it is;",o:["Tachypnoea","Bradypnea","Normal breath","Bradycardia"],a:1,e:"Correct answer: Bradypnea."},
+
+{p:"2",s:"CHE 225",q:"Which of the following does not increase during exercise;",o:["Heart rate","Respiratory rate","The thoracic","Total peripheral resistance"],a:3,e:"Correct answer: Total peripheral resistance."},
+
+{p:"2",s:"CHE 225",q:"The type of thermometer used in taking patients temperature is;",o:["Clinical thermometer","Electronic thermometer","Lotion thermometer","Body thermometer"],a:0,e:"Correct answer: Clinical thermometer."},
+
+{p:"2",s:"CHE 225",q:"One of following is not concepts use in anatomy and physiology;",o:["External","Medial","Diastema","Lateral"],a:2,e:"Correct answer: Diastema."},
+
+{p:"2",s:"CHE 225",q:"One of the following is not a feature of adaptive immunity;",o:["Each adaptive response acts against a particular invader","Respond after the invading substances are present","Very sensitive to foreign body","Resistance to foreign body"],a:3,e:"Correct answer: Resistance to foreign body."},
+
+{p:"2",s:"CHE 225",q:"One of the following is not true about enzymes;",o:["They are specific in action","They are insoluble substances","They are protein in nature","They are sensitive to temperature"],a:1,e:"Correct answer: They are insoluble substances."},
+
+{p:"2",s:"CHE 225",q:"Is the organelle that is responsible for catabolism is;",o:["Mitochondria","Nucleus","Endoplasmic reticulum","Golgi apparatus"],a:0,e:"Correct answer: Mitochondria."},
+
+{p:"2",s:"CHE 223",q:"Signs and symptoms of a disease condition also known as;",o:["Clinical manifestation","Anthropometric data","Clinical diagnosis","Symptomatology"],a:0,e:"Correct answer: Clinical manifestation."},
+
+{p:"2",s:"CHE 246",q:"One of the following best describe standing orders;",o:["Standing orders are set of specific guidelines arranged by age group, disease conditions, findings, clinical judgement and actions which define how clients should be care for","Standing orders are groups of various treatment of pathological diseases","Standing orders are set of guidelines arranged based on hierarchical states in which a patient will be care for","Standing orders are document arranged base on disease condition and various procedures to be carryout on patient"],a:0,e:"Correct answer: Standing orders are set of specific guidelines arranged by age group, disease conditions, findings, clinical judgement and actions which define how clients should be care for."},
+
+{p:"2",s:"CHE 225",q:"During interviewing the CHEW must not do one of the following;",o:["To have enough lighting","Make the client comfortable","Provide privacy","Must listen patiently and rush to the client"],a:3,e:"Correct answer: Must listen patiently and rush to the client."},
+
+{p:"2",s:"CHE 264",q:"MRDT stands for;",o:["Malaria Rapid Diagnostic Test","Malaria Rapid Diagnostic Therapy","Malaria Rapid Dagnosis Test","Malaria Rapid Demographic Therapy"],a:0,e:"Correct answer: Malaria Rapid Diagnostic Test."},
+
+{p:"2",s:"CHE 225",q:"A baby of 72hours was brought to your clinic with the complain of unable to pass stool as a CHEW what action are you going to take;",o:["Give enema and infusion","Give first aid and refer","Refer to higher facility immediately","Health educates the mother and reassured"],a:2,e:"Correct answer: Refer to higher facility immediately."},
+
+{p:"2",s:"CHE 225",q:"One of these is not a method of sterilization;",o:["Boiling","Steam sterilizer","Flaming","Steaming or autoclaving"],a:3,e:"Correct answer: Steaming or autoclaving."},
+
+{p:"2",s:"CHE 225",q:"During the first visit of a child in a clinic one of this is not among the history taking;",o:["Birth history","Marital history","Medical history","Nutritional history"],a:1,e:"Correct answer: Marital history."},
+
+{p:"2",s:"CHE 225",q:"One is a cause to the variation in pulse rate;",o:["Volume","Moderate pressure","Position of the patient","Rhythm"],a:2,e:"Correct answer: Position of the patient."},
+
+{p:"2",s:"CHE 225",q:"All the following are examples of fibrous connective tissue with an exception of one;",o:["Bone","Tendons","Ligament","Cartilage"],a:0,e:"Correct answer: Bone."},
+
+{p:"2",s:"CHE 246",q:"National Primary Health Care Development Agency revised the 3 rd edition of standing order into six sections in;",o:["2011","2015","2012","2010"],a:1,e:"Correct answer: 2015."},
+
+{p:"2",s:"CHE 231",q:"When a case is referred from a lower level of health care services to the next level of health services following a sequential step in health care delivery;",o:["2-way referral system","Normal route of 2-way referred system","Referral system","Emergency referral system"],a:2,e:"Correct answer: Referral system."},
+
+{p:"2",s:"CHE 225",q:"The functions of blood do not include one of the following",o:["Transport of substances across the cell membrane","Transport of hormones","Transport of oxygen from the lungs to the tissue","Transport of nutrients materials"],a:0,e:"Correct answer: Transport of substances across the cell membrane."},
+
+{p:"2",s:"CHE 225",q:"Pulse pressure is;",o:["Pressure in pulmonary vein","Difference between systolic and diastolic pressure","Diastolic pressure","Systolic pressure"],a:1,e:"Correct answer: Difference between systolic and diastolic pressure."},
+
+{p:"2",s:"CHE 225",q:"The factors that boost one’s immune system does not include one of the following;",o:["Positive mental health habits","Adequate diet","Adequate water supply","Vaccination"],a:3,e:"Correct answer: Vaccination."},
+
+{p:"2",s:"CHE 225",q:"Which of the following is not a cause to increase in respiratory rate;",o:["Heart diseases","Increase intracranial pressure","Diseases of the lungs and air passage","Excitement and emotion"],a:1,e:"Correct answer: Increase intracranial pressure."},
+
+{p:"2",s:"CHE 225",q:"Physical and chemical barriers, phagocytic cells and proteins are principal component of;",o:["Acquired immunity","Natural acquired","Adaptive immunity","Innate immunity"],a:3,e:"Correct answer: Innate immunity."},
+
+{p:"2",s:"CHE 225",q:"The break in the continuity of the skin and mucous membrane is referred to as;",o:["Injury","Accident","Infection","Wound"],a:3,e:"Correct answer: Wound."},
+
+{p:"2",s:"CHE 225",q:"The glands in the body that have both internal and external secretion are called;",o:["Exocrine gland","Mixed gland","Multiple gland","Endocrine glands"],a:1,e:"Correct answer: Mixed gland."},
+
+{p:"2",s:"CHE 225",q:"The largest artery in the human body is;",o:["The abdominal aorta","The pulmonary artery","The thoracic artery","The aorta"],a:3,e:"Correct answer: The aorta."},
+
+{p:"2",s:"CHE 225",q:"One of the following is not a factor affecting pulse rate;",o:["Position changes","Smoking","Dehydration","Exercise"],a:2,e:"Correct answer: Dehydration."},
+
+{p:"2",s:"CHE 225",q:"The common cause of rise in blood pressure in the community is due to;",o:["Obesity","Smoking and alcohol consumption","Regular exercise","Rise in temperature"],a:0,e:"Correct answer: Obesity."},
+
+{p:"2",s:"CHE 225",q:"If the patient’s nail are pitting, it means he/she has;",o:["Fungal infection","Iron deficiency anaemia","Eczema","Trauma"],a:2,e:"Correct answer: Eczema."},
+
+{p:"2",s:"CHE 246",q:"One of these is not part of the layout of standing orders;",o:["Brief description of disease condition","Laboratory investigation","Finding complaints and examination","Clinical judgement"],a:3,e:"Correct answer: Clinical judgement."},
+
+{p:"2",s:"CHE 225",q:"While examining a patient, we start by;",o:["Examination","Inspection","Palpation","Percussion"],a:1,e:"Correct answer: Inspection."},
+
+{p:"2",s:"CHE 246",q:"A patient of 15 years old with the complain of amenorrhea for the past 2months, what section of the standing order contains the management;",o:["Section two","Section four","Section three","Section one"],a:2,e:"Correct answer: Section three."},
+
+{p:"2",s:"CHE 261",q:"A situation or an incident that require subsequent attention or monitoring after an initial action has been taken on medical cases refer to as;",o:["Monitoring and evaluation","Home visit","Follow-up cases","Follow-up emergency"],a:2,e:"Correct answer: Follow-up cases."},
+
+{p:"2",s:"CHE 225",q:"The yellowish discolouration of conjunctiva and skin due to increase in bile pigmentation in the body is known as;",o:["Anaemia","Hepatitis","Yellow fever","Jaundice"],a:3,e:"Correct answer: Jaundice."},
+
+{p:"2",s:"CHE 225",q:"The device used in measuring the temperature using thermal radiation is called;",o:["Barometer","Pyrometer","Thermometer","Rectal thermometer"],a:1,e:"Correct answer: Pyrometer."},
+
+{p:"2",s:"CHE 225",q:"The process of listening to the internal sound of the body for diagnostic with the aid of instrument is called;",o:["Auscultation","Meditation","Perfusion","Percussion"],a:0,e:"Correct answer: Auscultation."},
+
+{p:"2",s:"CHE 225",q:"Postural hypotension is also known as;",o:["Hypotension","Hypertension","Orthostatic hypotension","Pre-hypertension"],a:2,e:"Correct answer: Orthostatic hypotension."},
+
+{p:"2",s:"CHE 246",q:"A 12 years old girl complain of itching scalp and pubic area as a CHEW what is the clinical judgement of the above case;",o:["Moderate condition","Moderate-severe","Mild-moderate condition","Mild condition"],a:0,e:"Correct answer: Moderate condition."},
+
+{p:"2",s:"CHE 225",q:"During taking of blood pressure at upper arm, chest piece of stethoscope will be put on which artery;",o:["Brachial artery","Popliteal artery","Radial artery","Axillary artery"],a:0,e:"Correct answer: Brachial artery."},
+
+{p:"2",s:"CHE 246",q:"One of this is not a step in the management of patients/clients with the use standing orders;",o:["Always elicit all sign and symptoms in the complaint column","Look up the client’s condition in the table of content under the section and turn to appropriate page","Ascertain client’s general appearance and locate the appropriate section","Perform all the examination listed in the examination column"],a:0,e:"Correct answer: Always elicit all sign and symptoms in the complaint column."},
+
+{p:"2",s:"CHE 225",q:"One of these is not a condition that put both adult and children into a grave change;",o:["Unconsciousness or delirium","Severe dehydration","Fever below 40 o C","Anoria"],a:2,e:"Correct answer: Fever below 40 o C."},
+
+{p:"2",s:"CHE 225",q:"The movement of molecules from the region of high concentration to lower concentration is;",o:["Diffusion","Exocytosis","Active transport","Osmosis"],a:0,e:"Correct answer: Diffusion."},
+
+{p:"2",s:"CHE 225",q:"A condition where there is a reduction in the number of red blood cell or reduced amount of haemoglobin in each red cell is known as;",o:["Sickle cell anaemia","Haemolytic jaundice","Anaemia","Haemorrhage"],a:2,e:"Correct answer: Anaemia."},
+
+{p:"2",s:"CHE 225",q:"Which of the following is not true about the body system;",o:["Each system contributes to the total body make-up vital functions","In the system the organs are joined together to accomplished a common purpose","The system is made up of several organs","All the body system has the same functions"],a:3,e:"Correct answer: All the body system has the same functions."},
+
+{p:"2",s:"CHE 225",q:"All except one is not a factor affecting blood pressure estimation;",o:["Exercise","Excessive intake of salt","Age","Stress"],a:1,e:"Correct answer: Excessive intake of salt."},
+
+{p:"2",s:"CHE 225",q:"The difference between systolic blood pressure and diastolic blood pressure is;",o:["Arterial pressure","Pulse pressure","Mean arterial pressure","Pulse deficit"],a:1,e:"Correct answer: Pulse pressure."},
+
+{p:"2",s:"CHE 246",q:"The first standing order was developed in",o:["1985","1980","1974","1979"],a:3,e:"Correct answer: 1979."},
+
+{p:"2",s:"CHE 225",q:"A sudden onset of symptoms or illness that typically has a short duration and often severe is called",o:["Moderate condition","Acute condition","Severe condition","Mild condition"],a:1,e:"Correct answer: Acute condition."},
+
+{p:"2",s:"CHE 225",q:"One of the following is not a rationale for studying anatomy and physiology",o:["Is necessary to know the normal structures and functions of the human body","Have a good idea of what one is looking for during physical examination","Anatomy gives an insight on how to identify the common health problems in the community","To have enough knowledge required to deliver good health care services in the community"],a:2,e:"Correct answer: Anatomy gives an insight on how to identify the common health problems in the community."},
+
+{p:"2",s:"CHE 225",q:"The epithelial tissue is categorically specified into",o:["Simple and Stratified","Stratified","Simple Squamous","Simple"],a:0,e:"Correct answer: Simple and Stratified."},
+
+{p:"2",s:"CHE 225",q:"ACT as an acronym means",o:["Artenisimin Combination Therapy","Artesunate combination Therapy","Artemisinin-based Combination Therapy","Artemisimin Combined Therapy"],a:2,e:"Correct answer: Artemisinin-based Combination Therapy."},
+
+{p:"2",s:"CHE 225",q:"The maintenance of constant internal environment of the human body is called",o:["Haemoptysis","Homeostasis","Haemostasis","Endocytosis"],a:1,e:"Correct answer: Homeostasis."},
+
+{p:"2",s:"CHE 225",q:"A unicellular living organism capable of independent existence is referred to as",o:["Muscle","Tissue","Cell membrane","Cell"],a:3,e:"Correct answer: Cell."},
+
+{p:"2",s:"CHE 225",q:"All the following statements are correct about the endocrine glands except one",o:["They do not possess ducts","They pour their secretion directly into the bloodstream","They all have a common secretion called hormone","They all produce and secrete enzymes"],a:3,e:"Correct answer: They all produce and secrete enzymes."},
+
+{p:"2",s:"CHE 225",q:"The glands in the body that have both internal and external secretions are called",o:["Endocrine glands","Exocrine gland","Multiple gland","Mixed gland"],a:3,e:"Correct answer: Mixed gland."},
+
+{p:"2",s:"CHE 225",q:"When a patient is asked to take a drug at ''nocte'' what does it imply",o:["Empty stomach","In the morning","At night","Before breakfast"],a:2,e:"Correct answer: At night."},
+
+{p:"2",s:"CHE 225",q:"One of the following is not among the factors that affect body's ability to resist infective and abnormal growth",o:["Social factor","Nutritional status","Hereditary factor","Autoimmune disease"],a:3,e:"Correct answer: Autoimmune disease."},
+
+{p:"2",s:"CHE 225",q:"Which of the following is not among the components of blood cells",o:["Leucocytes","Melanocytes","Erythrocytes","Thrombocytes"],a:1,e:"Correct answer: Melanocytes."},
+
+{p:"2",s:"CHE 225",q:"The cell theory as formulated by Robert Hooke and Theodor does not include one of the following",o:["Is the unit of life structure of all living things","Is fundamental unit of life which cannot exist independently","The cell is the unit functions of all living cells","All cells come from previously existing cells"],a:1,e:"Correct answer: Is fundamental unit of life which cannot exist independently."},
+
+{p:"2",s:"CHE 225",q:"A baby of 72 hours was brought to your clinic with the complaint of unable to pass stool as a CHEW what action are you going to take",o:["Give enema and infusion","Health educate the mother and reassure","Refer to higher facility immediately","Give first aid and refer"],a:2,e:"Correct answer: Refer to higher facility immediately."},
+
+{p:"2",s:"CHE 225",q:"A condition where there is a reduction in the number of red blood cells or reduced amount of haemoglobin in each red cell is known as",o:["Anaemia","Haemolytic jaundice","Sickle cell anaemia","Haemorrhage"],a:0,e:"Correct answer: Anaemia."},
+
+{p:"2",s:"CHE 225",q:"The number of times an individual breathes in and out within a minute is called",o:["Respiratory rate","Respiration","Respiratory volume","Expiration"],a:0,e:"Correct answer: Respiratory rate."},
+
+{p:"2",s:"CHE 225",q:"If the patients' nails are pitting, it means he/she",o:["Fungal infection","Eczema","Trauma","Iron deficiency anaemia"],a:1,e:"Correct answer: Eczema."},
+
+{p:"2",s:"CHE 225",q:"One of the following is not among the cell's organelles",o:["Nucleus","Ribosome","Adenisin triphosphate","Mitochondria"],a:2,e:"Correct answer: Adenisin triphosphate."},
+
+{p:"2",s:"CHE 225",q:"Which of the following is the primary cause of medication errors in health care settings",o:["Over use of medical equipment","Frequent patient's check-ups","Increased the electronic health records","Lack of adequate training"],a:3,e:"Correct answer: Lack of adequate training."},
+
+{p:"3",s:"CHE 232",q:"The common cause of gingivitis in a rural community is:",o:["Mouth odour","Deposit on teeth","Sinusitis","Poor oral hygiene"],a:3,e:"Correct answer: Poor oral hygiene."},
+
+{p:"3",s:"CHE 234",q:"A medical condition characterised by an abnormally small head size compared to other infants is referred to as:",o:["Macrocephaly","Microcephaly","Plagiocephaly","Anencephaly"],a:1,e:"Correct answer: Microcephaly."},
+
+{p:"3",s:"CHE 245",q:"Which among the cranial nerves supplies the nasal cavity:",o:["Olfactory nerve","Facial nerve","Sinus nerve","Trigeminal nerve"],a:0,e:"Correct answer: Olfactory nerve."},
+
+{p:"3",s:"CHE 244",q:"All except one is not a method of prevention and control measures of ear problems:",o:["Insertion of foreign materials","Early identification and management of problems","Intersectoral collaboration","Community mobilization"],a:0,e:"Correct answer: Insertion of foreign materials."},
+
+{p:"3",s:"CHE 245",q:"The interior nasal cavity is divided into two equal halves by:",o:["Lateral septum","Central septum","Posterior lateral septum","Anterior lateral septum"],a:1,e:"Correct answer: Central septum."},
+
+{p:"3",s:"CHE 234",q:"One of the following is not part of the bones and joints of the oral cavity:",o:["Maxilla","Incisors","Sublingual bone","Molars"],a:2,e:"Correct answer: Sublingual bone."},
+
+{p:"3",s:"CHE 234",q:"Typology of underweight babies at birth does not include one of the following:",o:["Infants with birthweight less than 1000gram","Infants with birthweight less than 2.5 kg","Infants with birthweight less than 500gram","Infants with birthweight less than 1.5 kg"],a:2,e:"Correct answer: Infants with birthweight less than 500gram."},
+
+{p:"3",s:"CHE 244",q:"The two major functions of the ear are hearing and:",o:["Reception","Interpretation","Balancing","Perception"],a:2,e:"Correct answer: Balancing."},
+
+{p:"3",s:"CHE 244",q:"The part of the ear that caged the malleus, incus and stapes is:",o:["Inner ear","Surface ear","External ear","Middle ear"],a:3,e:"Correct answer: Middle ear."},
+
+{p:"3",s:"CHE 232",q:"Which of the following is not a clinical feature of gingivitis:",o:["Bleeding from the gum","Tenderness of the gum","Plague gum","Redness of the gum"],a:2,e:"Correct answer: Plague gum."},
+
+{p:"3",s:"CHE 235",q:"Skin to skin contact between mother and the newborn often during breastfeeding is best described by:",o:["Tpr","Kap","Kmc","Mck"],a:2,e:"Correct answer: Kmc."},
+
+{p:"3",s:"CHE 232",q:"One of the problems associated with teeth eruption is:",o:["Early eruption","Delayed eruption","Molar eruption","Eruption problem"],a:1,e:"Correct answer: Delayed eruption."},
+
+{p:"3",s:"CHE 244",q:"The ear as an organ of hearing is supplied by:",o:["Olfactory nerve","Auditory nerve","Glossopharyngeal nerve","Optic nerve"],a:1,e:"Correct answer: Auditory nerve."},
+
+{p:"3",s:"CHE 257",q:"Health education plays a crucial role in community based newborn care for the following reason with the exclusion of one:",o:["Promote optimal newborn health outcome","Building supportive communities for the health of newborn","Empowering caregiver with relevant knowledge","Mitigation of preventive care"],a:3,e:"Correct answer: Mitigation of preventive care."},
+
+{p:"3",s:"CHE 244",q:"Perinatal mortality refers to:",o:["Death of a foetus or newborn during the perinatal period, which includes late pregnancy (usually starting at 18 weeks of gestation) and the first week of life (up to 7days after birth)","Death of a foetus which include early pregnancy or newborn at the first week of life.","Death of a foetus or newborn during the perinatal period, which includes late pregnancy (usually starting at 22 weeks of gestation) and the first week of life (up to 7 days after birth)","Death of a foetus or newborn during the perinatal period, which includes late pregnancy (usually starting at 30 weeks of gestation) and second week of life (up to 14days after birth)"],a:2,e:"Correct answer: Death of a foetus or newborn during the perinatal period, which includes late pregnancy (usually starting at 22 weeks of gestation) and the first week of life (up to 7 days after birth)."},
+
+{p:"3",s:"CHE 237",q:"The following maternal infections could predispose a neonate to ophthalmic condition:",o:["Measles and chlamydia infection","Diabetes and hypertension","Gonorrhoea and chlamydia infection","Measles and gonorrhoea"],a:2,e:"Correct answer: Gonorrhoea and chlamydia infection."},
+
+{p:"3",s:"CHE 244",q:"One of the following does not include the functions of eustachian tube:",o:["To maintain air pressure within the ear","To drain ear discharge","To congest the ear and its organ","To ventilate the middle ear"],a:2,e:"Correct answer: To congest the ear and its organ."},
+
+{p:"3",s:"CHE 257",q:"One of the following enables community health workers to promptly interfere and provide necessary care for newborns experiencing complications or health problems:",o:["Home visits","Birth preparedness","Healthy home care","Emergency care"],a:0,e:"Correct answer: Home visits."},
+
+{p:"3",s:"CHE 234",q:"One of the following is not a condition affecting the nose:",o:["Epistasis","Nasal obstruction","Nasal discharge","Basal ganglia"],a:3,e:"Correct answer: Basal ganglia."},
+
+{p:"3",s:"CHE 244",q:"The importance of early recognition and treatment of Ear, Nose and Throat disorders does not includes:",o:["To reduce cost of treatment","To prevent complication","To alleviate suffering","To promote further damage"],a:3,e:"Correct answer: To promote further damage."},
+
+{p:"3",s:"CHE 239",q:"One of the following is the best diagnostic test for maxillary sinusitis:",o:["Torch examination","Mri","CT scan","X-ray"],a:2,e:"Correct answer: CT scan."},
+
+{p:"3",s:"CHE 232",q:"Functions of the teeth exclude:",o:["Biting","Grinding","Tearing","Minding"],a:3,e:"Correct answer: Minding."},
+
+{p:"3",s:"CHE 239",q:"One of the following is not true about the impact of HIV/AIDS on the nation:",o:["Low in federal allocation account income","Healthcare cost increase","Decrease in growth domestic","Decrease life expectancy"],a:2,e:"Correct answer: Decrease in growth domestic."},
+
+{p:"3",s:"CHE 234",q:"One of the following is a risk factor associated with oral diseases and conditions:",o:["Heredity","Poor dentition","Good diet and nutrition","Unhealthy diet"],a:3,e:"Correct answer: Unhealthy diet."},
+
+{p:"3",s:"CHE 232",q:"The science and art of preventing, diagnosis and treating diseases, injuries and malformation of the teeth and associated structures is:",o:["Dentist","Dental care","Dentistry","Dental health"],a:2,e:"Correct answer: Dentistry."},
+
+{p:"3",s:"CHE 244",q:"All except one is not an instrument used in ear examination:",o:["Turning fork","Auroscope","Head lamp","Laryngeal mirror"],a:3,e:"Correct answer: Laryngeal mirror."},
+
+{p:"3",s:"CHE 234",q:"Babies born before 31 weeks of gestation are at higher risk of one of the following complications:",o:["Malnutrition","Birth defect","Life's viability","Prematurity"],a:3,e:"Correct answer: Prematurity."},
+
+{p:"3",s:"CHE 239",q:"One of the following is not a major sign of HIV/AIDS:",o:["Chronic diarrhoea for more than one month","Weight loss more than 10% body weight","Haemoglobin less than 14grm%/R","Prolong fever for more than one month"],a:2,e:"Correct answer: Haemoglobin less than 14grm%/R."},
+
+{p:"3",s:"CHE 234",q:"The pharynx is divided into three parts which includes:",o:["Laryngopharynx, oropharynx and otopharynx","Oropharynx, mesopharynx and nasopharynx","Nasopharynx, oropharynx and laryngopharynx","Nasopharynx, oropharynx and otopharynx"],a:2,e:"Correct answer: Nasopharynx, oropharynx and laryngopharynx."},
+
+{p:"3",s:"CHE 257",q:"Neonate or newborn infants are susceptible to various diseases and conditions which does not include one of the following:",o:["Neonatal sepsis","Hyperglycaemia","Neonatal icterus","Birth injury"],a:1,e:"Correct answer: Hyperglycaemia."},
+
+{p:"3",s:"CHE 239",q:"HIV/AIDS can not be transmitted through one of the following routes:",o:["Transmission of infected blood or blood product","Mother to child","Contact with saliva, tears or sweat of infected person","Unprotected sexual intercourse with infected person"],a:2,e:"Correct answer: Contact with saliva, tears or sweat of infected person."},
+
+{p:"3",s:"CHE 232",q:"The type of teeth that are located in the front part of the mouth is known as:",o:["Incisors","Canine","Premolar","Molar"],a:0,e:"Correct answer: Incisors."},
+
+{p:"3",s:"CHE 232",q:"One of the following is not a factor associated with development of dental caries:",o:["Adequate nutrition during tooth development","Low standard of oral hygiene","Failure to obtain regular dental check-up","Fluoride deficiency"],a:0,e:"Correct answer: Adequate nutrition during tooth development."},
+
+{p:"3",s:"CHE 232",q:"Which of the following is not a predisposing factor of cancrum oris:",o:["Unsafe drinking water","Infection disease","Poor oral hygiene","Periodontal disease"],a:0,e:"Correct answer: Unsafe drinking water."},
+
+{p:"3",s:"CHE 239",q:"A serious and deadly disease caused by virus that attacks and destroys the body's defensive system is known as:",o:["STI","HIV infection","AIDS","HBV infection"],a:2,e:"Correct answer: AIDS."},
+
+{p:"3",s:"CHE 257",q:"Types of KMC tailored to the specific needs of the newborn and their caregiver does not consider one of the following:",o:["Prolonged Kmc","Intermittent Kmc","Continuous Kmc","Lifelong Kmc"],a:3,e:"Correct answer: Lifelong Kmc."},
+
+{p:"3",s:"CHE 232",q:"One of the steps of removing dental plaque is:",o:["Drugs","Eating of chewing gum","Taking of sweets","Brushing of teeth"],a:3,e:"Correct answer: Brushing of teeth."},
+
+{p:"3",s:"CHE 239",q:"One of the following is true about AIDS:",o:["Having T-cells count less than 200cells/mm³ in the blood stream","Onset of opportunistic infection","Presence of HIV virus in the body","It is the most advanced stage"],a:3,e:"Correct answer: It is the most advanced stage."},
+
+{p:"3",s:"CHE 234",q:"Which of the following is not part of the structures that make up the oral cavity:",o:["Tongue","Gingiva","Cheeks","Pharynx"],a:3,e:"Correct answer: Pharynx."},
+
+{p:"3",s:"CHE 234",q:"For calcification of dentures and hard tissues, our body needs much of:",o:["Vitamin B complex","Chromosomes","Vitamin D","Fluoride"],a:2,e:"Correct answer: Vitamin D."},
+
+{p:"3",s:"CHE 244",q:"Bleeding from the nose that may be unilateral or bilateral and may be due to a variety of lesions of the nose, paranasal sinuses and nasopharynx is called:",o:["Pharyngitis","Epistasis","Nasopharyngitis","Sinusitis"],a:1,e:"Correct answer: Epistasis."},
+
+{p:"3",s:"CHE 235",q:"Elements of KMC in the care of the newborn does not include one of the following:",o:["Thermal deregulation","Exclusive breastfeeding","Skin to skin contact","Emotional bonding and support"],a:0,e:"Correct answer: Thermal deregulation."},
+
+{p:"3",s:"CHE 234",q:"One of the following is not a composition of periodontium:",o:["The alveolar bone","The periodontal ligament","Calcification ligament","The cementum"],a:2,e:"Correct answer: Calcification ligament."},
+
+{p:"3",s:"CHE 244",q:"The structure in the inner ear that is responsible for detecting changes in head position and movement of an individual is called:",o:["Stapes","Cochlea","Malleus","Semicircular canal"],a:3,e:"Correct answer: Semicircular canal."},
+
+{p:"3",s:"CHE 234",q:"The dietary habit in oral health that does not contribute to good oral health is:",o:["Avoidance of much sugary food","Taking of much sugary food","Taking much balance diet","Taking much of fruits regularly"],a:1,e:"Correct answer: Taking of much sugary food."},
+
+{p:"3",s:"CHE 244",q:"The instrument used in detecting hearing impairment is:",o:["Bronchoscope","Laryngoscope","Turning fork","Auroscope"],a:2,e:"Correct answer: Turning fork."},
+
+{p:"3",s:"CHE 239",q:"The slow growing retro-virus which induces immune-deficiency characterized by a long period latent infection is referred to as:",o:["HIV","HBV infection","AIDS","STI"],a:0,e:"Correct answer: HIV."},
+
+{p:"3",s:"CHE 244",q:"Otomycosis is a disease of the ear caused by:",o:["Bacteria","Protozoa","Fungi","Virus"],a:2,e:"Correct answer: Fungi."},
+
+{p:"3",s:"CHE 244",q:"One of the following is not a symptom of ear infection:",o:["Congestion in the ear","Trouble hearing and fever","Irrigation of the ear","Fluid drainage and dizziness"],a:2,e:"Correct answer: Irrigation of the ear."},
+
+{p:"3",s:"CHE 235",q:"The acronym EBF stands for:",o:["Exclusive brest feeding","Excessive Breast Feeding","Exclusive Breast Feeding","Excessive brest feeding"],a:2,e:"Correct answer: Exclusive Breast Feeding."},
+
+{p:"3",s:"CHE 239",q:"Factors that predispose transmission of HIV/AIDS in the community does not include one of the following:",o:["Transactional and inter-generational sex","Poor interpersonal relationship among community members","Sexually transmitted infections","Multiple concurrent sexual partnership"],a:1,e:"Correct answer: Poor interpersonal relationship among community members."},
+
+{p:"3",s:"CHE 244",q:"Disease conditions affecting ear, nose and throat includes all except one:",o:["Motion sickness","Keratitis","Sinusitis","Allergic problems"],a:1,e:"Correct answer: Keratitis."},
+
+{p:"3",s:"CHE 239",q:"One of the following is not a sociological impact of HIV/AIDS:",o:["Increase episode of illnesses","Disruption in relationship and marriage","Withdrawal from social engagement","Increase number of families living in poverty"],a:3,e:"Correct answer: Increase number of families living in poverty."},
+
+{p:"3",s:"CHE 257",q:"A serious medical condition characterised by a systemic infection in newborn infants within the first one month of life is referred to as:",o:["Infant sepsis","Neonatal infestation","Neonatal sepsis","Infant infection"],a:2,e:"Correct answer: Neonatal sepsis."},
+
+{p:"3",s:"CHE 234",q:"An important structure in the oral cavity is:",o:["Lambdoidal bone","Maxilla bone","Incur bone","Palatine bone"],a:1,e:"Correct answer: Maxilla bone."},
+
+{p:"3",s:"CHE 232",q:"The factors that influence teeth eruption includes all except one:",o:["Tobacco use","Heredity","Hormones","Trauma"],a:0,e:"Correct answer: Tobacco use."},
+
+{p:"3",s:"CHE 234",q:"A condition in which the oral cavity has a foul smell and is more pronounced when the person talks or breathes is:",o:["Halitosis","Halitosys","Alitosis","Holitosis"],a:0,e:"Correct answer: Halitosis."},
+
+{p:"3",s:"CHE 234",q:"Saliva protects the oral cavity against micro-organisms because it has:",o:["Chloride","Sodium","Defensive","Fluoride"],a:2,e:"Correct answer: Defensive."},
+
+{p:"3",s:"CHE 234",q:"One of the following steps is not recommended in cord care:",o:["Keep it dry","Keep it clean","Monitor for signs of infection","Encourage immersion"],a:3,e:"Correct answer: Encourage immersion."},
+
+{p:"3",s:"CHE 234",q:"The root of the mouth that separates the mouth from the nasal passage is called:",o:["Mandible","Palate","Maxilla","Jaw"],a:1,e:"Correct answer: Palate."},
+
+{p:"3",s:"CHE 239",q:"The pinna as one of the structures of the outer ear consist of:",o:["Voma bone","Vestibular","Cartilaginous material","Cochlea"],a:2,e:"Correct answer: Cartilaginous material."},
+
+{p:"3",s:"CHE 244",q:"Nasal polyp is an example of a disease condition that affects",o:["Pharynx","Nose","Throat","Ear"],a:1,e:"Correct answer: Nose."},
+
+{p:"3",s:"CHE 237",q:"Which of the following is not a common site of oral cancer:",o:["The loosening of the mouth","The tongue","The cheeks","The palate"],a:0,e:"Correct answer: The loosening of the mouth."},
+
+{p:"3",s:"CHE 232",q:"Which of the following is a sign and symptom of dental caries",o:["Difficulty in talking","Deposit on teeth","Dryness of mouth","Pain while drinking hot or cold water"],a:3,e:"Correct answer: Pain while drinking hot or cold water."},
+
+{p:"3",s:"CHE 235",q:"Benefits of birth spacing to community based newborn care does not include one of the following",o:["Allow the mother to establish and maintain Ebf","It incapacitates women towards decision making","Allow mothers body time to recover from the physical and emotional demand of pregnancy","Reduce risk of preterm birth"],a:1,e:"Correct answer: It incapacitates women towards decision making."},
+
+{p:"3",s:"CHE 257",q:"An infant who is born with a birth weight of less than 2500 grams regardless of gestational age is termed:",o:["Micro baby","Microcephalic baby","Small baby","Tiny baby"],a:2,e:"Correct answer: Small baby."},
+
+{p:"3",s:"CHE 257",q:"The healthcare services provided to women during pregnancy, child birth, and the postpartum period, as well as to their newborn infants encompasses a range of services aimed at ensuring the health and wellbeing of both mother and baby before, during and after child birth depicts:",o:["Perinatal care","Post conception care","Neonatal care","Child health care"],a:0,e:"Correct answer: Perinatal care."},
+
+{p:"3",s:"CHE 239",q:"The signs and symptoms suggestive HIV and AIDS include all the followings except:",o:["Anorexia","Sore throat","Fever","Swollen lymph nodes"],a:3,e:"Correct answer: Swollen lymph nodes."},
+
+{p:"3",s:"CHE 245",q:"Ophthalmic neonatorum has the following clinical manifestations with the exclusion of:",o:["Discharge","Scarring of the corneal","Eye irritation","Redness"],a:1,e:"Correct answer: Scarring of the corneal."},
+
+{p:"3",s:"CHE 234",q:"Which symptom is often associated with nasal polyps?",o:["Sneezing","Nose bleeding","Facial pain","Loss of smell"],a:3,e:"Correct answer: Loss of smell."},
+
+{p:"3",s:"CHE 257",q:"One of the following is an intervention package that has been found to be beneficial in essential newborn care at the community level:",o:["Cord care with 4% chlorhexidine gel","Cord care with warm water","Cord care with warm saline water","Cord care with methylated spirit"],a:0,e:"Correct answer: Cord care with 4% chlorhexidine gel."},
+
+{p:"3",s:"CHE 257",q:"The major causes of perinatal mortality in Nigeria does not include:",o:["Low birth weight","Hypovolaemic","Congenital anomalies","Birth complication"],a:1,e:"Correct answer: Hypovolaemic."},
+
+{p:"3",s:"CHE 257",q:"The means of bringing life-saving care in mothers and newborns at the community level is best described as:",o:["Community based newborn","Imci","Maternal and child healthcare","Child health care"],a:0,e:"Correct answer: Community based newborn."},
+
+{p:"3",s:"CHE 244",q:"Prevention and control of ear, nose and throat problems does not include:",o:["Community mobilization against unsafe ear, nose and throat practices","Encourage regular Ent check-ups","Encourage the youth to be using ear piece","Proper management of Ent problems with standing orders"],a:2,e:"Correct answer: Encourage the youth to be using ear piece."},
+
+{p:"3",s:"CHE 257",q:"The element of community based newborn care that directly impact the health and wellbeing of newborns and their families is:",o:["Healthy home environment","Maternal nutrition","Home visit","Birth preparedness"],a:2,e:"Correct answer: Home visit."},
+
+{p:"3",s:"CHE 232",q:"Preventive and control measures of mouth infection exclude:",o:["Good oral hygiene","Proper brushing technique","Visiting dental centre","Improper brushing technique"],a:3,e:"Correct answer: Improper brushing technique."},
+
+{p:"3",s:"CHE 232",q:"One of the following is a non-communicable disease of the mouth",o:["Periodontal disease","Dental caries","Tooth decay","Cleft lip and palate"],a:3,e:"Correct answer: Cleft lip and palate."},
+
+{p:"3",s:"CHE 239",q:"One of the following is not among the effects of HIV on the infected person:",o:["It attacks white blood cells","It increases vulnerability to life threatening illness","It attacks and kills thrombocytes","It weakens the immune system"],a:2,e:"Correct answer: It attacks and kills thrombocytes."},
+
+{p:"3",s:"CHE 251",q:"One of the following is a process of mobilizing the community against unsafe ENT practices:",o:["Public campaign against Ent unsafe practices in the community","Encourage nursing mothers to always breastfeed their babies while lying down","Promoting usage of herbal drugs in managing Ent problems in the community","Public campaign on use of local instruments during uvulectomy"],a:0,e:"Correct answer: Public campaign against Ent unsafe practices in the community."},
+
+{p:"3",s:"CHE 239",q:"One of the following is not vulnerable to HIV/AIDS:",o:["Military and other uniform group","Health care worker","Market women","Long distance driver"],a:2,e:"Correct answer: Market women."},
+
+{p:"3",s:"CHE 232",q:"The primary prevention of dental carries exclude:",o:["Early diagnosis and prompt treatment","Regular dental check-up","Fluoridation","Good oral hygiene"],a:0,e:"Correct answer: Early diagnosis and prompt treatment."},
+
+{p:"3",s:"CHE 234",q:"Which of the following is a common symptom of throat infection:",o:["Hoarseness","White patches on the tonsils","Running nose","Cough"],a:0,e:"Correct answer: Hoarseness."},
+
+{p:"3",s:"CHE 257",q:"Major causes of neonatal mortality in Nigeria does not include one of the following:",o:["Respiratory distress syndrome","Congenital anomalies","Lack of skilled care at birth","Asepsis at birth"],a:3,e:"Correct answer: Asepsis at birth."},
+
+{p:"3",s:"CHE 244",q:"One of the following is not among the unsafe practices associated with Ear, Nose and Throat:",o:["Self-medication for Ear, Nose and Throat","Smoking and alcoholism","Routine medical check-up","Undergoing local neck surgery"],a:2,e:"Correct answer: Routine medical check-up."},
+
+{p:"3",s:"CHE 257",q:"Key components of thermal care for neonate does not include one of the following:",o:["Warm clothing and bedding","Kmc","Temperature","Avoidance of cold surfaces"],a:2,e:"Correct answer: Temperature."},
+
+{p:"3",s:"CHE 244",q:"Number of infants who die within the first 28 days of life, per 1,000 live births in a given year is:",o:["Infant morbidity","Neonatal morbidity","Neonatal mortality","Infant mortality"],a:2,e:"Correct answer: Neonatal mortality."},
+
+{p:"3",s:"CHE 234",q:"The surgical removal of all or part of the voice box in the throat is called:",o:["Uvulectomy","Pharyngotomy","Tonsillectomy","Laryngotomy"],a:3,e:"Correct answer: Laryngotomy."},
+
+{p:"3",s:"CHE 244",q:"All except one is not an aim of primary ENT care:",o:["Identification of available resources for ear, nose and throat care","Increase the rate of Ent problems in the community","Prompt referral of cases for continuity of care","Early identification and management of ear, nose and throat disorder"],a:1,e:"Correct answer: Increase the rate of Ent problems in the community."},
+
+{p:"3",s:"CHE 244",q:"Instrument used for ear irrigation is:",o:["Tympanic membrane","Ear syringe","Ear tunnel","Ear barrel"],a:1,e:"Correct answer: Ear syringe."},
+
+{p:"3",s:"CHE 234",q:"The larynx is commonly known as:",o:["Voice box","Voice boss","Voice bus","Vocal bux"],a:0,e:"Correct answer: Voice box."},
+
+{p:"3",s:"CHE 234",q:"A Community Health Extension Worker (CHEW) cannot offer one the following services to ENT patients:",o:["Take the history of the complain","Encourage the patient on regular medical check-up","Manage the patient's condition according to standing orders","Conduct cochlea implantation"],a:3,e:"Correct answer: Conduct cochlea implantation."},
+
+{p:"3",s:"CHE 232",q:"Which of the following is not a harmful cultural practice that affects the health of the oral cavity:",o:["Unintentional removal of teeth","Sharpening front teeth","Removal of certain teeth","Making a hole in the upper lip and inserting an ornamental stick"],a:0,e:"Correct answer: Unintentional removal of teeth."},
+
+{p:"3",s:"CHE 232",q:"All except one is not a prevention and control of gingivitis:",o:["Encourage balanced diet intake","Community mobilization and health education","Regular oral check-up","Consume mineral rich food items"],a:3,e:"Correct answer: Consume mineral rich food items."},
+
+{p:"3",s:"CHE 245",q:"A medical condition characterised by yellowing of the skin and the white of the eyes due to elevated levels of bilirubin in the blood of infants is referred to as:",o:["Neonatal asphyxia","Neonatal hypoxia","Neonatal asphyxia","Neonatal icterus"],a:3,e:"Correct answer: Neonatal icterus."},
+
+{p:"3",s:"CHE 257",q:"The acronym KMC as a package for essential newborn care at the community level means:",o:["Kangaroo Mother Care","Cangaru maternal care","Cangaru mother care","Kangaru Mother Care"],a:0,e:"Correct answer: Kangaroo Mother Care."},
+
+{p:"3",s:"CHE 257",q:"The WHO defined neonatal mortality as the death of a newborn:",o:["Before the first 30 days of life","Within the first 28 days of life","Within the first 30 days of life","After the first 28 days of life"],a:1,e:"Correct answer: Within the first 28 days of life."},
+
+{p:"3",s:"CHE 257",q:"Components of essential newborn care does not include one of the following:",o:["Skilled birth attendance","Immediate newborn care","Antenatal education and counselling","Health education and awareness to infants"],a:3,e:"Correct answer: Health education and awareness to infants."},
+
+{p:"3",s:"CHE 244",q:"The major sinuses within the bones surrounding the nasal cavity includes all except:",o:["Ethmoid sinuses","Sphenoid sinuses","Vomal sinuses","Frontal sinuses"],a:2,e:"Correct answer: Vomal sinuses."}
+
+];
+
+const ADS=[
+  {brand:"NCDC Nigeria",text:"Stay updated on disease outbreaks across Nigeria.",cta:"Visit NCDC",color:"#0ea5e9"},
+  {brand:"NAFDAC",text:"Report fake drugs and adverse reactions. Protect your community.",cta:"Report Now",color:"#10b981"},
+  {brand:"WHO Nigeria",text:"Free WHO online courses for health workers. Earn certificates.",cta:"Start Free",color:"#8b5cf6"},
+  {brand:"Advertise Here",text:"Reach 50,000+ CHEW students monthly. Contact us today.",cta:"Contact Us",color:"#f59e0b"},
+];
+
+function AdBanner({dark,idx=0}){
+  const [v,setV]=useState(true);
+  const ad=ADS[idx%ADS.length];
+  if(!v)return null;
+  const bg=dark?"rgba(255,255,255,0.03)":"rgba(0,0,0,0.02)";
+  const br=dark?"rgba(255,255,255,0.07)":"rgba(0,0,0,0.07)";
+  return(
+    <div style={{background:bg,border:`1px dashed ${br}`,borderRadius:10,padding:"10px 14px",margin:"10px 0",position:"relative",display:"flex",alignItems:"center",gap:10}}>
+      <div style={{fontSize:8,color:"#94a3b8",position:"absolute",top:3,left:8,fontWeight:600}}>ADVERTISEMENT</div>
+      <button onClick={()=>setV(false)} style={{position:"absolute",top:2,right:6,background:"none",border:"none",cursor:"pointer",color:"#94a3b8",fontSize:17,lineHeight:1}}>x</button>
+      <div style={{paddingTop:10,flex:1}}>
+        <div style={{fontSize:10,fontWeight:700,color:ad.color}}>{ad.brand}</div>
+        <div style={{fontSize:12,color:dark?"#94a3b8":"#64748b"}}>{ad.text}</div>
+      </div>
+      <button style={{background:ad.color,color:"#fff",border:"none",borderRadius:8,padding:"6px 12px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>{ad.cta}</button>
+    </div>
+  );
+}
+
+function ScoreRing({score,total,size=110,color="#10b981"}){
+  const pct=total>0?score/total:0;
+  const r=size/2-8;
+  const circ=2*Math.PI*r;
+  return(
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <circle cx={size/2} cy={size/2} r={r} stroke="#e2e8f0" strokeWidth="7" fill="none"/>
+      <circle cx={size/2} cy={size/2} r={r} stroke={color} strokeWidth="7" fill="none"
+        strokeDasharray={`${circ*pct} ${circ}`} strokeLinecap="round"
+        transform={`rotate(-90 ${size/2} ${size/2})`} style={{transition:"stroke-dasharray 1.2s ease"}}/>
+      <text x={size/2} y={size/2-5} textAnchor="middle" fontSize="20" fontWeight="800" fill={color}>{score}</text>
+      <line x1={size/2-10} y1={size/2+3} x2={size/2+10} y2={size/2+3} stroke="#e2e8f0" strokeWidth="1"/>
+      <text x={size/2} y={size/2+18} textAnchor="middle" fontSize="13" fill="#94a3b8">{total}</text>
+    </svg>
+  );
+}
+
+function PctRing({pct,size=90,color="#10b981"}){
+  const r=size/2-8;
+  const circ=2*Math.PI*r;
+  return(
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <circle cx={size/2} cy={size/2} r={r} stroke="#e2e8f0" strokeWidth="7" fill="none"/>
+      <circle cx={size/2} cy={size/2} r={r} stroke={color} strokeWidth="7" fill="none"
+        strokeDasharray={`${circ*pct/100} ${circ}`} strokeLinecap="round"
+        transform={`rotate(-90 ${size/2} ${size/2})`} style={{transition:"stroke-dasharray 1.2s ease"}}/>
+      <text x={size/2} y={size/2+6} textAnchor="middle" fontSize="17" fontWeight="800" fill={color}>{pct}%</text>
+    </svg>
+  );
+}
+
+export default function App(){
+  const [dark,setDark]=useState(false);
+  const [screen,setScreen]=useState("home");
+  const [activePaper,setActivePaper]=useState(null);
+  const [activePost,setActivePost]=useState(null);
+  const [studentName,setStudentName]=useState("");
+  const [sessionId,setSessionId]=useState("");
+  const [quizPool,setQuizPool]=useState([]);
+  const [qIdx,setQIdx]=useState(0);
+  const [sel,setSel]=useState(null);
+  const [rev,setRev]=useState(false);
+  const [score,setScore]=useState(0);
+  const [answers,setAnswers]=useState([]);
+  const [done,setDone]=useState(false);
+  const [timeLeft,setTimeLeft]=useState(3600);
+  const [timeTaken,setTimeTaken]=useState(0);
+  const [showAdmin,setShowAdmin]=useState(false);
+  const [copiedId,setCopiedId]=useState(null);
+  const [showSheet,setShowSheet]=useState(true);
+  const [posts,setPosts]=useState([
+    {id:"post_p1_2026",paper:"1",title:"CHEW Paper 1 — Mock Exam 2026",desc:"100 questions covering all Paper 1 subjects per CHPRBN 2026 national exam timetable.",date:"Jul 2026",attempts:247,active:true},
+    {id:"post_p2_2026",paper:"2",title:"CHEW Paper 2 — Mock Exam 2026",desc:"100 questions covering all Paper 2 subjects per CHPRBN 2026 national exam timetable.",date:"Jul 2026",attempts:189,active:true},
+    {id:"post_p3_2026",paper:"3",title:"CHEW Paper 3 — Mock Exam 2026",desc:"100 questions covering all Paper 3 subjects per CHPRBN 2026 national exam timetable.",date:"Jul 2026",attempts:201,active:true},
+  ]);
+  const [newPost,setNewPost]=useState({paper:"1",title:"",desc:""});
+  const timerRef=useRef(null);
+
+  const c={
+    bg:dark?"#0f172a":"#f1f5f9",
+    card:dark?"#1e293b":"#ffffff",
+    text:dark?"#f1f5f9":"#0f172a",
+    sub:dark?"#94a3b8":"#64748b",
+    border:dark?"#334155":"#e2e8f0",
+  };
+
+  useEffect(()=>{
+    if(screen==="quiz"&&!done){
+      timerRef.current=setInterval(()=>{
+        setTimeLeft(t=>{if(t<=1){clearInterval(timerRef.current);setDone(true);return 0;}return t-1;});
+        setTimeTaken(t=>t+1);
+      },1000);
+    }
+    return()=>clearInterval(timerRef.current);
+  },[screen,done]);
+
+  function openPost(post){
+    setActivePost(post);
+    setActivePaper(post.paper);
+    setStudentName("");
+    setScreen("register");
+  }
+
+  function startQuiz(){
+    if(!studentName.trim()){alert("Please enter your name to continue.");return;}
+    const sid=generateId();
+    setSessionId(sid);
+    const pool=ALL_Q.filter(q=>q.p===activePaper).sort(()=>Math.random()-0.5).slice(0,100);
+    setQuizPool(pool);
+    setQIdx(0);setSel(null);setRev(false);
+    setScore(0);setAnswers([]);setDone(false);
+    setTimeLeft(3600);setTimeTaken(0);
+    setPosts(prev=>prev.map(p=>p.id===activePost.id?{...p,attempts:p.attempts+1}:p));
+    setScreen("quiz");
+  }
+
+  function pick(i){
+    if(rev)return;
+    setSel(i);setRev(true);
+    const correct=i===quizPool[qIdx].a;
+    if(correct)setScore(s=>s+1);
+    setAnswers(a=>[...a,{ok:correct,q:quizPool[qIdx].q,sub:quizPool[qIdx].s,correct:quizPool[qIdx].o[quizPool[qIdx].a],selected:i>=0?quizPool[qIdx].o[i]:"(Time up)",exp:quizPool[qIdx].e}]);
+  }
+
+  function next(){
+    if(qIdx+1>=quizPool.length){clearInterval(timerRef.current);setDone(true);return;}
+    setQIdx(i=>i+1);setSel(null);setRev(false);
+  }
+
+  function copyLink(post){
+    const link=`${window.location.origin}${window.location.pathname}?post=${post.id}&paper=${post.paper}`;
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(link).then(()=>{setCopiedId(post.id);setTimeout(()=>setCopiedId(null),2500);});
+    }else{
+      alert("Share this link with students:\n\n"+link);
+    }
+  }
+
+  function addPost(){
+    if(!newPost.title.trim()){alert("Please enter a title.");return;}
+    const p={...newPost,id:`post_${newPost.paper}_${generateId()}`,date:new Date().toLocaleDateString("en-NG",{month:"short",year:"numeric"}),attempts:0,active:true};
+    setPosts(prev=>[p,...prev]);
+    setNewPost({paper:"1",title:"",desc:""});
+    alert(`Post created!\nTitle: ${p.title}\n\nNow click Copy Link and share with students on WhatsApp.`);
+  }
+
+  const mins=Math.floor(timeLeft/60);
+  const secs=timeLeft%60;
+  const timerCol=timeLeft>600?"#10b981":timeLeft>300?"#f59e0b":"#ef4444";
+
+  const CSS=`
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap');
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Outfit',sans-serif;}
+    ::-webkit-scrollbar{width:4px;}::-webkit-scrollbar-thumb{background:#0ea5e930;border-radius:4px;}
+    button,select,input,textarea{font-family:inherit;}
+    input:focus,select:focus,textarea:focus{outline:none;}textarea{resize:none;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  `;
+
+  // ── RESULT ──
+  if(screen==="quiz"&&done){
+    const final=answers.filter(a=>a.ok).length;
+    const pct=quizPool.length>0?Math.round(final/quizPool.length*100):0;
+    const wrong=quizPool.length-final;
+    const grade=pct>=80?"Excellent! 🏆":pct>=60?"Good Pass 👍":pct>=50?"Pass 📚":"Below Pass 💪";
+    const gc=pct>=80?"#10b981":pct>=60?"#0ea5e9":pct>=50?"#f59e0b":"#ef4444";
+    const tm=Math.floor(timeTaken/60);const ts=timeTaken%60;
+    const pInfo=PAPERS[activePaper];
+    const shareUrl=`${window.location.href.split("?")[0]}?result=${sessionId}&name=${encodeURIComponent(studentName)}&score=${final}&total=${quizPool.length}&paper=${activePaper}`;
+    return(
+      <div style={{minHeight:"100vh",background:c.bg,fontFamily:"'Outfit',sans-serif"}}>
+        <style>{CSS}</style>
+        <div style={{background:pInfo.gradient,padding:"13px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:10}}>
+          <div>
+            <div style={{color:"rgba(255,255,255,0.7)",fontSize:11}}>{pInfo.name} Result</div>
+            <div style={{color:"#fff",fontWeight:800,fontSize:15}}>{studentName}</div>
+          </div>
+          <button onClick={()=>setScreen("home")} style={{background:"rgba(255,255,255,0.2)",border:"none",borderRadius:8,padding:"7px 14px",color:"#fff",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Home</button>
+        </div>
+        <div style={{padding:"16px",maxWidth:520,margin:"0 auto"}}>
+          <div style={{background:c.card,borderRadius:20,padding:"24px 20px",marginBottom:14,border:`1px solid ${c.border}`,boxShadow:dark?"0 8px 40px rgba(0,0,0,0.4)":"0 8px 40px rgba(0,0,0,0.1)"}}>
+            <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:20,color:c.text,textAlign:"center",marginBottom:3}}>CBT Tutorial</h2>
+            <div style={{fontSize:12,color:c.sub,textAlign:"center",marginBottom:3}}>NAME : {studentName}</div>
+            <div style={{fontSize:11,color:c.sub,textAlign:"center",marginBottom:18}}>{new Date().toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"})} — {tm}m {ts}s</div>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:20,marginBottom:20}}>
+              <div style={{textAlign:"center"}}>
+                <div style={{fontSize:11,color:c.sub,marginBottom:6}}>Your Score</div>
+                <ScoreRing score={final} total={quizPool.length} size={110} color={gc}/>
+              </div>
+              <div style={{textAlign:"center"}}>
+                <PctRing pct={pct} size={90} color={gc}/>
+                <div style={{fontSize:12,fontWeight:700,color:gc,marginTop:6}}>{grade}</div>
+              </div>
+            </div>
+            <div style={{border:`1px solid ${c.border}`,borderRadius:12,overflow:"hidden",marginBottom:16}}>
+              {[{ico:"🟢",lbl:"Correct",val:final,pct2:pct+"%",col:"#10b981"},{ico:"🔴",lbl:"Wrong",val:wrong,pct2:(100-pct)+"%",col:"#ef4444"},{ico:"🟡",lbl:"Skipped",val:0,pct2:"0%",col:"#f59e0b"}].map((r,i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",padding:"12px 16px",borderBottom:i<2?`1px solid ${c.border}`:"none",gap:10}}>
+                  <span style={{fontSize:14}}>{r.ico}</span>
+                  <span style={{flex:1,fontSize:14,fontWeight:600,color:c.text}}>{r.lbl}</span>
+                  <span style={{fontSize:14,color:r.col,fontWeight:700,minWidth:42,textAlign:"right"}}>{r.pct2}</span>
+                  <span style={{fontSize:14,color:c.sub,minWidth:20,textAlign:"right"}}>{r.val}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{background:dark?"rgba(16,185,129,0.1)":"#f0fdf4",border:"1px solid #86efac",borderRadius:10,padding:"9px 14px",marginBottom:16,textAlign:"center",fontSize:12,color:"#10b981",fontWeight:600}}>
+              Note: This score is not final
+            </div>
+            <div style={{display:"flex",gap:10,marginBottom:10}}>
+              <button onClick={startQuiz} style={{flex:1,background:pInfo.gradient,color:"#fff",border:"none",borderRadius:12,padding:"13px",fontWeight:700,cursor:"pointer",fontFamily:"inherit",fontSize:14}}>Retry</button>
+              <button onClick={()=>setScreen("home")} style={{flex:1,background:c.card,border:`1.5px solid ${c.border}`,color:c.text,borderRadius:12,padding:"13px",fontWeight:600,cursor:"pointer",fontFamily:"inherit",fontSize:14}}>Home</button>
+            </div>
+            <button onClick={()=>{if(navigator.clipboard){navigator.clipboard.writeText(shareUrl).then(()=>alert("Result link copied! Share with anyone:\n"+shareUrl));}else{alert("Your result link:\n"+shareUrl);}}}
+              style={{width:"100%",background:dark?"#334155":"#f1f5f9",border:`1px solid ${c.border}`,color:c.text,borderRadius:12,padding:"11px",fontWeight:600,cursor:"pointer",fontFamily:"inherit",fontSize:13,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+              Share My Result Link
+            </button>
+          </div>
+          <AdBanner dark={dark} idx={1}/>
+          <div style={{background:c.card,borderRadius:16,border:`1px solid ${c.border}`,overflow:"hidden",marginBottom:14}}>
+            <button onClick={()=>setShowSheet(s=>!s)} style={{width:"100%",padding:"14px 18px",borderBottom:showSheet?`1px solid ${c.border}`:"none",display:"flex",alignItems:"center",justifyContent:"space-between",background:"none",border:"none",cursor:"pointer",fontFamily:"inherit",color:c.text,fontWeight:700,fontSize:15}}>
+              <span>{showSheet?"Hide":"Show"} Answer Sheet</span>
+              <span style={{fontSize:18}}>{showSheet?"^":"v"}</span>
+            </button>
+            {showSheet&&answers.map((ans,i)=>(
+              <div key={i} style={{padding:"14px 18px",borderBottom:i<answers.length-1?`1px solid ${c.border}`:"none"}}>
+                <div style={{fontSize:10,color:pInfo.color,fontWeight:700,marginBottom:3}}>{quizPool[i]?.s}</div>
+                <div style={{fontSize:13,fontWeight:600,color:c.text,marginBottom:8,lineHeight:1.5}}>{i+1}. {ans.q}</div>
+                <div style={{background:dark?"rgba(16,185,129,0.1)":"#f0fdf4",borderRadius:8,padding:"7px 12px",marginBottom:ans.ok?0:6,display:"flex",justifyContent:"space-between"}}>
+                  <span style={{fontSize:12,color:"#10b981",fontWeight:700}}>Correct: {ans.correct}</span>
+                  <span style={{fontSize:11,color:c.sub,fontWeight:600}}>1/1 Marks</span>
+                </div>
+                {!ans.ok&&<>
+                  <div style={{background:dark?"rgba(239,68,68,0.1)":"#fef2f2",borderRadius:8,padding:"7px 12px",marginBottom:6}}>
+                    <span style={{fontSize:12,color:"#ef4444",fontWeight:700}}>Your answer: {ans.selected}</span>
+                  </div>
+                  <div style={{background:dark?"rgba(14,165,233,0.1)":"#eff6ff",borderRadius:8,padding:"8px 12px",fontSize:12,color:c.sub,lineHeight:1.6}}>{ans.exp}</div>
+                </>}
+              </div>
+            ))}
+          </div>
+          <AdBanner dark={dark} idx={2}/>
+        </div>
+      </div>
+    );
+  }
+
+  // ── QUIZ ──
+  if(screen==="quiz"){
+    const q=quizPool[qIdx];
+    if(!q)return null;
+    const pInfo=PAPERS[activePaper];
+    return(
+      <div style={{height:"100vh",display:"flex",flexDirection:"column",background:c.bg,fontFamily:"'Outfit',sans-serif",overflow:"hidden"}}>
+        <style>{CSS}</style>
+        <div style={{background:c.card,borderBottom:`1px solid ${c.border}`,padding:"10px 16px",flexShrink:0}}>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
+            <div>
+              <div style={{fontWeight:700,fontSize:13,color:c.text}}>{pInfo.name} — Q {qIdx+1}/{quizPool.length}</div>
+              <div style={{fontSize:10,color:pInfo.color,fontWeight:700,marginTop:2}}>{q.s} — {studentName}</div>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <span style={{fontSize:12,color:"#10b981",fontWeight:700}}>{score} correct</span>
+              <div style={{display:"flex",alignItems:"center",gap:5,background:dark?"#1e293b":"#f8fafc",border:`2px solid ${timerCol}`,borderRadius:10,padding:"6px 11px"}}>
+                <span style={{fontSize:11,color:"#94a3b8"}}>Time</span>
+                <span style={{fontWeight:800,fontSize:16,color:timerCol,fontVariantNumeric:"tabular-nums"}}>{String(mins).padStart(2,"0")}:{String(secs).padStart(2,"0")}</span>
+              </div>
+            </div>
+          </div>
+          <div style={{height:5,background:dark?"#334155":"#e2e8f0",borderRadius:3,overflow:"hidden"}}>
+            <div style={{height:"100%",width:`${(qIdx/quizPool.length)*100}%`,background:`linear-gradient(90deg,${pInfo.color},${pInfo.color}aa)`,borderRadius:3,transition:"width 0.4s"}}/>
+          </div>
+        </div>
+        <div style={{flex:1,overflowY:"auto",padding:"14px"}}>
+          {qIdx>0&&qIdx%20===0&&!rev&&<AdBanner dark={dark} idx={qIdx}/>}
+          <div style={{background:c.card,borderRadius:16,padding:"18px 16px",marginBottom:14,border:`1px solid ${c.border}`}}>
+            <div style={{fontSize:10,fontWeight:700,color:pInfo.color,textTransform:"uppercase",marginBottom:8,letterSpacing:"0.05em"}}>Past Exam Question — {pInfo.name}</div>
+            <p style={{fontSize:15,color:c.text,lineHeight:1.75,fontWeight:500}}>{q.q}</p>
+          </div>
+          {q.o.map((opt,i)=>{
+            let bg=c.card,bc=c.border,col=c.text,ico=null;
+            if(rev){if(i===q.a){bg=dark?"#14532d":"#f0fdf4";bc="#22c55e";col="#16a34a";ico="Correct";}else if(i===sel){bg=dark?"#450a0a":"#fef2f2";bc="#ef4444";col="#dc2626";ico="Wrong";}}
+            return(
+              <button key={i} onClick={()=>pick(i)} disabled={rev}
+                style={{width:"100%",background:bg,border:`1.5px solid ${bc}`,borderRadius:13,padding:"13px 15px",marginBottom:10,cursor:rev?"default":"pointer",textAlign:"left",fontSize:14,color:col,fontFamily:"inherit",display:"flex",alignItems:"center",gap:12,transition:"all 0.2s"}}>
+                <span style={{width:28,height:28,borderRadius:"50%",background:rev&&i===q.a?"#22c55e":rev&&i===sel?"#ef4444":dark?"#334155":"#e2e8f0",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:rev&&(i===q.a||i===sel)?"#fff":c.sub,flexShrink:0}}>
+                  {["A","B","C","D"][i]}
+                </span>{opt}
+              </button>
+            );
+          })}
+          {rev&&<>
+            <div style={{background:dark?"#1e3a5f":"#eff6ff",border:"1px solid #93c5fd",borderRadius:13,padding:"14px 16px",marginBottom:12,animation:"fadeUp 0.3s ease-out"}}>
+              <div style={{fontSize:11,fontWeight:700,color:"#0ea5e9",marginBottom:6}}>EXPLANATION — 1/1 Marks</div>
+              <p style={{fontSize:13,color:c.text,lineHeight:1.7}}>{q.e}</p>
+            </div>
+            <button onClick={next} style={{width:"100%",background:pInfo.gradient,color:"#fff",border:"none",borderRadius:13,padding:"14px",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit",boxShadow:`0 4px 20px ${pInfo.color}44`}}>
+              {qIdx+1>=quizPool.length?"View Results and Answer Sheet":"Next Question"}
+            </button>
+          </>}
+        </div>
+      </div>
+    );
+  }
+
+  // ── REGISTER ──
+  if(screen==="register"){
+    const pInfo=PAPERS[activePaper];
+    return(
+      <div style={{minHeight:"100vh",background:c.bg,display:"flex",alignItems:"center",justifyContent:"center",padding:20,fontFamily:"'Outfit',sans-serif"}}>
+        <style>{CSS}</style>
+        <div style={{width:"100%",maxWidth:400}}>
+          <div style={{background:pInfo.gradient,borderRadius:"18px 18px 0 0",padding:"24px 22px",textAlign:"center"}}>
+            <div style={{fontSize:36,marginBottom:10}}>{pInfo.icon}</div>
+            <h2 style={{fontFamily:"'Playfair Display',serif",color:"#fff",fontSize:22,fontWeight:800,marginBottom:6}}>{activePost?.title}</h2>
+            <p style={{color:"rgba(255,255,255,0.82)",fontSize:13,lineHeight:1.5,marginBottom:14}}>{activePost?.desc}</p>
+            <div style={{display:"flex",justifyContent:"center",gap:8,flexWrap:"wrap"}}>
+              {["60 Minutes","100 Questions","Instant Results","Shareable Link"].map((t,i)=>(
+                <span key={i} style={{background:"rgba(255,255,255,0.2)",color:"#fff",fontSize:10,fontWeight:600,padding:"4px 10px",borderRadius:20}}>{t}</span>
+              ))}
+            </div>
+          </div>
+          <div style={{background:c.card,borderRadius:"0 0 18px 18px",padding:"24px 22px",border:`1px solid ${c.border}`,borderTop:"none",boxShadow:dark?"0 8px 40px rgba(0,0,0,0.4)":"0 8px 40px rgba(0,0,0,0.1)"}}>
+            <h3 style={{fontWeight:700,fontSize:16,color:c.text,marginBottom:6}}>Enter Your Full Name</h3>
+            <p style={{fontSize:13,color:c.sub,marginBottom:18,lineHeight:1.5}}>Your name will appear on your result sheet and shareable result link.</p>
+            <input value={studentName} onChange={e=>setStudentName(e.target.value)}
+              onKeyDown={e=>e.key==="Enter"&&startQuiz()}
+              placeholder="e.g. Dahiru Ibrahim" autoFocus
+              style={{width:"100%",padding:"13px 14px",border:`1.5px solid ${studentName?pInfo.color:c.border}`,borderRadius:12,background:dark?"#0f172a":"#f8fafc",color:c.text,fontSize:15,fontFamily:"inherit",marginBottom:14,transition:"border-color 0.2s"}}/>
+            <AdBanner dark={dark} idx={0}/>
+            <button onClick={startQuiz} disabled={!studentName.trim()}
+              style={{width:"100%",background:studentName.trim()?pInfo.gradient:"#e2e8f0",color:studentName.trim()?"#fff":"#94a3b8",border:"none",borderRadius:13,padding:"15px",fontSize:16,fontWeight:800,cursor:studentName.trim()?"pointer":"not-allowed",fontFamily:"inherit",boxShadow:studentName.trim()?`0 6px 24px ${pInfo.color}44`:"none",marginBottom:10,transition:"all 0.2s"}}>
+              Start Exam Now
+            </button>
+            <button onClick={()=>setScreen("home")} style={{width:"100%",background:"none",border:`1px solid ${c.border}`,color:c.sub,borderRadius:13,padding:"11px",fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>Back to Home</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── HOME ──
+  return(
+    <div style={{minHeight:"100vh",background:c.bg,fontFamily:"'Outfit',sans-serif"}}>
+      <style>{CSS}</style>
+      <header style={{background:"linear-gradient(135deg,#0c4a6e,#0369a1)",padding:"12px 18px",display:"flex",alignItems:"center",justifyContent:"space-between",position:"sticky",top:0,zIndex:20,boxShadow:"0 2px 20px rgba(3,105,161,0.4)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:36,height:36,borderRadius:10,background:"rgba(255,255,255,0.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>📋</div>
+          <div>
+            <div style={{fontFamily:"'Playfair Display',serif",color:"#fff",fontSize:16,fontWeight:800,lineHeight:1}}>CHEW Past Questions Hub</div>
+            <div style={{fontSize:9,color:"rgba(255,255,255,0.65)"}}>Nigeria — CHPRBN 2026 National Exam</div>
+          </div>
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={()=>setDark(d=>!d)} style={{background:"rgba(255,255,255,0.12)",border:"none",borderRadius:20,width:30,height:30,color:"rgba(255,255,255,0.85)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,cursor:"pointer"}}>{dark?"☀":"🌙"}</button>
+          <button onClick={()=>{const p=prompt("Admin Password:");if(p==="chew2026")setShowAdmin(a=>!a);else if(p)alert("Incorrect password.");}}
+            style={{background:"rgba(255,255,255,0.12)",border:"none",borderRadius:8,padding:"6px 12px",color:"rgba(255,255,255,0.85)",fontSize:11,fontWeight:600,cursor:"pointer"}}>Admin</button>
+        </div>
+      </header>
+
+      {showAdmin&&(
+        <div style={{background:dark?"#0f172a":"#eff6ff",borderBottom:"3px solid #0ea5e9",padding:"20px 18px"}}>
+          <div style={{maxWidth:600,margin:"0 auto"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:16}}>
+              <h3 style={{fontWeight:800,fontSize:17,color:"#0ea5e9"}}>Admin Panel</h3>
+              <button onClick={()=>setShowAdmin(false)} style={{background:"none",border:"none",color:c.sub,fontSize:22,cursor:"pointer"}}>x</button>
+            </div>
+            <div style={{background:c.card,borderRadius:16,padding:"18px",marginBottom:14,border:`1px solid ${c.border}`}}>
+              <div style={{fontSize:13,fontWeight:700,color:c.text,marginBottom:14}}>Create New Exam Post</div>
+              <div style={{display:"flex",flexDirection:"column",gap:12}}>
+                <div>
+                  <label style={{fontSize:12,fontWeight:600,color:c.sub,display:"block",marginBottom:5}}>SELECT PAPER</label>
+                  <select value={newPost.paper} onChange={e=>setNewPost(p=>({...p,paper:e.target.value}))}
+                    style={{width:"100%",padding:"11px 13px",border:`1.5px solid ${c.border}`,borderRadius:10,background:dark?"#0f172a":"#fff",color:c.text,fontSize:14}}>
+                    <option value="1">Paper 1 — CHE 211, 213, 215, 218, GNP 123, CHE 254, 262, 214, ENT 111, 240, 233, 221, 226</option>
+                    <option value="2">Paper 2 — CHE 246, 223, 224, 225, 231, 241, 261, 263, 264, 253, 242</option>
+                    <option value="3">Paper 3 — CHE 234, 232, 235, 236, 225, 244, 245, 251, 252, 237, 257, 239</option>
+                  </select>
+                </div>
+                <div>
+                  <label style={{fontSize:12,fontWeight:600,color:c.sub,display:"block",marginBottom:5}}>POST TITLE</label>
+                  <input value={newPost.title} onChange={e=>setNewPost(p=>({...p,title:e.target.value}))}
+                    placeholder="e.g. CHEW Paper 1 Practice — August 2026"
+                    style={{width:"100%",padding:"11px 13px",border:`1.5px solid ${c.border}`,borderRadius:10,background:dark?"#0f172a":"#fff",color:c.text,fontSize:14}}/>
+                </div>
+                <div>
+                  <label style={{fontSize:12,fontWeight:600,color:c.sub,display:"block",marginBottom:5}}>DESCRIPTION (optional)</label>
+                  <textarea value={newPost.desc} onChange={e=>setNewPost(p=>({...p,desc:e.target.value}))}
+                    placeholder="Brief description for students..." rows={2}
+                    style={{width:"100%",padding:"11px 13px",border:`1.5px solid ${c.border}`,borderRadius:10,background:dark?"#0f172a":"#fff",color:c.text,fontSize:14}}/>
+                </div>
+                <button onClick={addPost} style={{background:"linear-gradient(135deg,#0ea5e9,#10b981)",color:"#fff",border:"none",borderRadius:12,padding:"13px",fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+                  Create Post and Generate Link
+                </button>
+              </div>
+            </div>
+            <div style={{background:c.card,borderRadius:16,border:`1px solid ${c.border}`,overflow:"hidden"}}>
+              <div style={{padding:"14px 18px",borderBottom:`1px solid ${c.border}`,fontWeight:700,fontSize:14,color:c.text}}>Manage Posts</div>
+              {posts.map((post,i)=>(
+                <div key={post.id} style={{padding:"13px 18px",borderBottom:i<posts.length-1?`1px solid ${c.border}`:"none",display:"flex",alignItems:"center",gap:10}}>
+                  <span style={{fontSize:18}}>{PAPERS[post.paper].icon}</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:600,color:c.text}}>{post.title}</div>
+                    <div style={{fontSize:11,color:c.sub}}>{post.attempts} attempts — {post.date}</div>
+                  </div>
+                  <button onClick={()=>copyLink(post)}
+                    style={{background:copiedId===post.id?"#10b981":PAPERS[post.paper].color,color:"#fff",border:"none",borderRadius:8,padding:"6px 12px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit",transition:"background 0.3s"}}>
+                    {copiedId===post.id?"Copied!":"Copy Link"}
+                  </button>
+                  <button onClick={()=>setPosts(prev=>prev.filter(p=>p.id!==post.id))}
+                    style={{background:"none",border:"1px solid #fecaca",borderRadius:8,padding:"6px 10px",fontSize:11,color:"#ef4444",cursor:"pointer"}}>Delete</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div style={{background:"linear-gradient(160deg,#0c4a6e 0%,#0369a1 50%,#059669 100%)",padding:"24px 18px 30px",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",top:-40,right:-40,width:160,height:160,borderRadius:"50%",background:"rgba(255,255,255,0.06)"}}/>
+        <div style={{position:"relative",maxWidth:600,margin:"0 auto"}}>
+          <h2 style={{fontFamily:"'Playfair Display',serif",color:"#fff",fontSize:22,fontWeight:800,marginBottom:6,lineHeight:1.25}}>CHPRBN 2026 National Exam Practice</h2>
+          <p style={{color:"rgba(255,255,255,0.82)",fontSize:13,lineHeight:1.65,marginBottom:18}}>Click any exam below. Enter your name. Answer 100 questions in 1 hour. Get instant results with full answer sheet and shareable link.</p>
+          <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+            {[{v:`${ALL_Q.length}+`,l:"Questions"},{v:"3",l:"Papers"},{v:"1hr",l:"Per Exam"},{v:"100",l:"Qs Per Exam"}].map((s,i)=>(
+              <div key={i} style={{background:"rgba(255,255,255,0.14)",backdropFilter:"blur(6px)",borderRadius:12,padding:"10px 14px",textAlign:"center",border:"1px solid rgba(255,255,255,0.18)"}}>
+                <div style={{color:"#fff",fontWeight:800,fontSize:17,lineHeight:1}}>{s.v}</div>
+                <div style={{color:"rgba(255,255,255,0.7)",fontSize:10,marginTop:3}}>{s.l}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{padding:"0 16px 24px",maxWidth:600,margin:"0 auto"}}>
+        <AdBanner dark={dark} idx={0}/>
+        <div style={{fontSize:11,fontWeight:700,color:c.sub,textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:14,marginTop:4}}>Click an Exam to Attempt</div>
+
+        {posts.filter(p=>p.active).map((post,i)=>{
+          const pInfo=PAPERS[post.paper];
+          return(
+            <div key={post.id} style={{background:c.card,borderRadius:18,border:`1.5px solid ${pInfo.color}22`,marginBottom:16,overflow:"hidden",boxShadow:dark?"0 4px 24px rgba(0,0,0,0.3)":"0 4px 24px rgba(0,0,0,0.08)",animation:`fadeUp 0.4s ease-out ${i*0.1}s both`}}>
+              <div style={{background:pInfo.gradient,padding:"16px 18px"}}>
+                <div style={{display:"flex",alignItems:"flex-start",gap:12,marginBottom:10}}>
+                  <span style={{fontSize:28,flexShrink:0}}>{pInfo.icon}</span>
+                  <div>
+                    <div style={{fontSize:10,fontWeight:700,color:"rgba(255,255,255,0.7)",textTransform:"uppercase",marginBottom:2}}>CHPRBN 2026 — {pInfo.name}</div>
+                    <h3 style={{color:"#fff",fontWeight:800,fontSize:16,lineHeight:1.25,marginBottom:6}}>{post.title}</h3>
+                    <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                      {["1 Hour","100 Questions",post.date,`${post.attempts} attempts`].map((t,j)=>(
+                        <span key={j} style={{background:"rgba(255,255,255,0.18)",color:"#fff",fontSize:9,fontWeight:700,padding:"3px 9px",borderRadius:20}}>{t}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div style={{padding:"12px 18px",borderBottom:`1px solid ${c.border}`}}>
+                <div style={{fontSize:11,fontWeight:600,color:c.sub,marginBottom:6}}>Subjects in this paper:</div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                  {pInfo.subjects.map((sub,j)=>(
+                    <span key={j} style={{background:`${pInfo.color}12`,color:pInfo.color,fontSize:9,fontWeight:700,padding:"2px 8px",borderRadius:20}}>{sub}</span>
+                  ))}
+                </div>
+              </div>
+              {post.desc&&<div style={{padding:"10px 18px",borderBottom:`1px solid ${c.border}`}}>
+                <p style={{fontSize:13,color:c.sub,lineHeight:1.5}}>{post.desc}</p>
+              </div>}
+              <div style={{padding:"14px 18px",display:"flex",gap:10}}>
+                <button onClick={()=>openPost(post)}
+                  style={{flex:1,background:pInfo.gradient,color:"#fff",border:"none",borderRadius:13,padding:"14px",fontSize:15,fontWeight:700,cursor:"pointer",fontFamily:"inherit",boxShadow:`0 4px 20px ${pInfo.color}44`,transition:"transform 0.18s"}}
+                  onMouseEnter={e=>e.currentTarget.style.transform="scale(1.02)"}
+                  onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}>
+                  Attempt {pInfo.name}
+                </button>
+                <button onClick={()=>copyLink(post)}
+                  style={{background:copiedId===post.id?"#10b981":dark?"#334155":"#f1f5f9",border:`1px solid ${copiedId===post.id?"#10b981":c.border}`,color:copiedId===post.id?"#fff":c.text,borderRadius:13,padding:"14px 16px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",flexShrink:0,transition:"all 0.3s"}}>
+                  {copiedId===post.id?"Copied!":"Copy Link"}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+
+        <AdBanner dark={dark} idx={2}/>
+
+        <div style={{background:c.card,borderRadius:16,border:`1px solid ${c.border}`,overflow:"hidden",marginBottom:14}}>
+          <div style={{padding:"14px 18px",borderBottom:`1px solid ${c.border}`,fontWeight:700,fontSize:14,color:c.text}}>CHPRBN 2026 Official Paper Distribution</div>
+          {Object.entries(PAPERS).map(([key,p],idx2)=>(
+            <div key={key} style={{padding:"14px 18px",borderBottom:idx2<2?`1px solid ${c.border}`:"none"}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                <span style={{fontSize:18}}>{p.icon}</span>
+                <span style={{fontWeight:700,fontSize:14,color:p.color}}>{p.name}</span>
+                <span style={{fontSize:11,color:c.sub}}>({p.subjects.length} subjects)</span>
+              </div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                {p.subjects.map((sub,j)=>(
+                  <span key={j} style={{background:`${p.color}12`,color:p.color,fontSize:10,fontWeight:600,padding:"3px 9px",borderRadius:20}}>{sub}</span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{background:c.card,borderRadius:16,padding:"16px 18px",border:`1px solid ${c.border}`,marginBottom:14}}>
+          <div style={{fontSize:13,fontWeight:700,color:c.text,marginBottom:12}}>How It Works</div>
+          {[["1","Click Attempt Paper above"],["2","Enter your full name"],["3","Answer 100 questions in 60 minutes"],["4","Get instant score with full answer sheet"],["5","Copy and share your result link"],["6","Admin creates new exam posts anytime"]].map(([n,txt],i)=>(
+            <div key={i} style={{display:"flex",alignItems:"center",gap:10,marginBottom:9}}>
+              <span style={{width:22,height:22,borderRadius:"50%",background:"linear-gradient(135deg,#0ea5e9,#10b981)",color:"#fff",fontSize:11,fontWeight:800,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{n}</span>
+              <span style={{fontSize:13,color:c.sub}}>{txt}</span>
+            </div>
+          ))}
+        </div>
+
+        <AdBanner dark={dark} idx={3}/>
+      </div>
+    </div>
+  );
+}
